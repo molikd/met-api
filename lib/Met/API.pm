@@ -7,7 +7,7 @@ use Dancer qw/:syntax/;
 use Dancer::Response;
 
 use MIME::Base64;
-use YAML::XS;
+use YAML::XS qw/LoadFile/;
 use JSON::XS;
 use Plack::Handler::Gazelle;
 
@@ -17,6 +17,18 @@ use Dancer::Logger::Met;
 
 
 my $name = __PACKAGE__;
+our $CONFIG = {
+	log          => 'met',
+	log_level    => 'info',
+	log_facility => 'daemon',
+	workers      =>  8,
+	keepalive    =>  150,
+	port         =>  8000,
+	gid          => 'met',
+	uid          => 'met',
+	pidfile      => '/run/met-api.pid',
+	log_file     => '/var/log/met-api.log',
+};
 
 get '/' => sub {
 	info '/ hit';
@@ -33,12 +45,45 @@ get '/' => sub {
 		</html>
 	|;
 };
+sub _configure
+{
+	my (%OPTIONS) = @_;
 
-set syslog => { facility => 'daemon', ident => $name };
-set logger_format => '%h %L %m';
-set logger => 'met';
-set log    => 'info';
+	$OPTIONS{config} ||= '/etc/metapi.yml';
+	my $config_file;
+	if (-f $OPTIONS{config}) {
+		eval { $config_file = LoadFile($OPTIONS{config}); 1 }
+			or die "Failed to load $OPTIONS{config}: $@\n";
+	} else {
+		print STDERR "No configuration file found starting|stopping with defaults\n";
+	}
 
+	for (keys %$config_file) {
+		$CONFIG->{$_} = $config_file->{$_};
+		$CONFIG->{$_} = $OPTIONS{$_} if exists $OPTIONS{$_};
+	}
+	for (keys %OPTIONS) {
+		$CONFIG->{$_} = $OPTIONS{$_};
+	}
+
+	if ($CONFIG->{log} =~ m/syslog/i) {
+		set syslog   => { facility => $CONFIG->{log_facility}, ident => __PACKAGE__, };
+	} elsif($CONFIG->{log} =~ m/file/i) {
+		set log_file => $CONFIG->{log_file};
+	}
+	set logger       => $CONFIG->{log};
+	if ($CONFIG->{debug}) {
+		$CONFIG->{log_level} = 'debug';
+		set show_errors =>  1;
+	}
+	set log           => $CONFIG->{log_level};
+	set logger_format => '%h %L %m';
+
+	# set serializer   => 'JSON';
+	# set content_type => 'application/json';
+}
+
+_configure({});
 info 'spawning Met::API';
 my $server = Plack::Handler::Gazelle->new(
 	port    => 8000,
