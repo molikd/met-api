@@ -35,6 +35,7 @@ get '/' => sub {
 };
 
 set syslog => { facility => 'daemon', ident => $name };
+set logger_format => '%h %L %m';
 set logger => 'met';
 set log    => 'info';
 
