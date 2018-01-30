@@ -20,7 +20,7 @@ sub init {
 		                    || setting('appname') 
 		                    || $ENV{DANCER_APPDIR} 
 		                    || basename($0);
-	$self->{logopt}   = $conf->{logopt}   || 'ndelay';
+	$self->{logopt}   = $conf->{logopt}   || 'ndelay,pid';
 }
 
 sub DESTROY { closelog() }
