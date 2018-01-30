@@ -13,11 +13,13 @@ use Plack::Handler::Gazelle;
 
 use DBI;
 use DBD::Pg;
-use Sys::Syslog;
+use Dancer::Logger::Met;
 
 
 my $name = __PACKAGE__;
+
 get '/' => sub {
+	info '/ hit';
 	my $html = qq|
 		<!DOCTYPE html>
 		<html lang="en_US">
@@ -32,6 +34,11 @@ get '/' => sub {
 	|;
 };
 
+set syslog => { facility => 'daemon', ident => $name };
+set logger => 'met';
+set log    => 'info';
+
+info 'spawning Met::API';
 my $server = Plack::Handler::Gazelle->new(
 	port    => 8000,
 	workers => 8,
