@@ -20,6 +20,7 @@ my $name = __PACKAGE__;
 my $DB;
 our $CONFIG = {
 	log          => 'met',
+	session      => 'met',
 	log_level    => 'info',
 	log_facility => 'daemon',
 	workers      =>  8,
@@ -99,6 +100,7 @@ sub _configure # {{{
 		set show_errors =>  1;
 	}
 	set log           => $CONFIG->{log_level};
+	set session       => $CONFIG->{session};
 	set logger_format => '%h %L %m';
 
 	# set serializer   => 'JSON';
