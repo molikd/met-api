@@ -8,7 +8,7 @@ use Dancer::Response;
 
 use MIME::Base64;
 use YAML::XS qw/LoadFile/;
-use JSON::XS;
+use JSON::XS qw/encode_json decode_json/;
 use Plack::Handler::Gazelle;
 
 use DBI;
@@ -17,6 +17,7 @@ use Dancer::Logger::Met;
 
 
 my $name = __PACKAGE__;
+my $DB;
 our $CONFIG = {
 	log          => 'met',
 	log_level    => 'info',
@@ -30,7 +31,7 @@ our $CONFIG = {
 	log_file     => '/var/log/met-api.log',
 };
 
-get '/' => sub {
+get '/' => sub { # {{{
 	info '/ hit';
 	my $html = qq|
 		<!DOCTYPE html>
@@ -45,7 +46,28 @@ get '/' => sub {
 		</html>
 	|;
 };
-sub _configure
+# }}}
+
+sub _db { # {{{
+	if (!$DB) {
+		$DB = DBI->connect("dbi:SQLite:dbname=spam.db", "", "", { RaiseError => 1 })
+			or error "failed to connect to spam.db: ".$DBI::errstr;
+		$DB->do("PRAGMA synchronous = OFF;") or die "failed to turn off synchronous pragma: ".$dbh->errstr;
+		$DB->do("PRAGMA journal_mode = MEMORY;") or die "failed to set journal pragma to memory: ".$dbh->errstr;
+		$DB->do("PRAGMA threads = 128;") or die "failed to set auxillary thread limit: ".$dbh->errstr;
+		#my $sth = $dbh->prepare("INSERT INTO spam (ip, host, received, country, email_from, email_to, reason_id, reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+		#$dbh->begin_work or die "failed to begin bulk import: ".$dbh->errstr;;
+
+		#$dbh->commit or die "failed to commit bulk import: ".$dbh->errstr;
+		#$dbh->do("CREATE INDEX _all_i ON SPAM(ip,host,received,country,email_from,email_to,reason_id);")
+		#	or die "failed to create _all_i index: ".$dbh->errstr;
+		#$dbh->disconnect or die "failed to disconnect from spam.db: ".$dbh->errstr;
+	}
+	return $DB;
+}
+# }}}
+
+sub _configure # {{{
 {
 	my (%OPTIONS) = @_;
 
@@ -82,14 +104,14 @@ sub _configure
 	# set serializer   => 'JSON';
 	# set content_type => 'application/json';
 }
+# }}}
 
 _configure({});
-info 'spawning Met::API';
+info "spawning $name";
 my $server = Plack::Handler::Gazelle->new(
-	port    => 8000,
-	workers => 8,
+	port    => $CONFIG->{port},
+	workers => $CONFIG->{workers},
 );
-
 $server->run(sub {Met::API->dance(Dancer::Request->new(env => shift))});
 
 =head1 NAME
