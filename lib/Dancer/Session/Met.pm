@@ -6,9 +6,7 @@ use warnings;
 
 use parent 'Dancer::Session::Abstract';
 
-use Redis 1.955;
 use Redis::hiredis;
-
 use Dancer::Config 'setting';
 use Storable ();
 use Carp ();
@@ -104,7 +102,7 @@ sub redis {
 
 		$params{password} = $options{password} if $options{password};
 
-		$_redis = Redis->new(%params);
+		$_redis = Redis::hiredis->new(%params);
 	}
 
 	$_redis and return $_redis;

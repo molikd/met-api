@@ -53,9 +53,9 @@ sub _db { # {{{
 	if (!$DB) {
 		$DB = DBI->connect("dbi:SQLite:dbname=spam.db", "", "", { RaiseError => 1 })
 			or error "failed to connect to spam.db: ".$DBI::errstr;
-		$DB->do("PRAGMA synchronous = OFF;") or die "failed to turn off synchronous pragma: ".$dbh->errstr;
-		$DB->do("PRAGMA journal_mode = MEMORY;") or die "failed to set journal pragma to memory: ".$dbh->errstr;
-		$DB->do("PRAGMA threads = 128;") or die "failed to set auxillary thread limit: ".$dbh->errstr;
+		$DB->do("PRAGMA synchronous = OFF;") or die "failed to turn off synchronous pragma: ".$DB->errstr;
+		$DB->do("PRAGMA journal_mode = MEMORY;") or die "failed to set journal pragma to memory: ".$DB->errstr;
+		$DB->do("PRAGMA threads = 128;") or die "failed to set auxillary thread limit: ".$DB->errstr;
 		#my $sth = $dbh->prepare("INSERT INTO spam (ip, host, received, country, email_from, email_to, reason_id, reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 		#$dbh->begin_work or die "failed to begin bulk import: ".$dbh->errstr;;
 
@@ -100,6 +100,7 @@ sub _configure # {{{
 		set show_errors =>  1;
 	}
 	set log           => $CONFIG->{log_level};
+	set redis_session => { server => 'localhost', sock => '', database => '', password => ''};
 	set session       => $CONFIG->{session};
 	set logger_format => '%h %L %m';
 
@@ -108,7 +109,7 @@ sub _configure # {{{
 }
 # }}}
 
-_configure({});
+_configure();
 info "spawning $name";
 my $server = Plack::Handler::Gazelle->new(
 	port    => $CONFIG->{port},
