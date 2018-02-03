@@ -49,6 +49,72 @@ get '/' => sub { # {{{
 };
 # }}}
 
+prefix '/met' => sub {
+	prefix '/v1' => sub {
+		prefix '/taxa' => sub {
+			get '/otu' => sub {
+				my @otus = query_parameters->get_all('otu');
+			};
+			get '/name' => sub {
+				my $order = query_parameters->get('order');
+				my $family = query_parameters->get('family');
+				my $genus = query_parameters->get('genus');
+				my $species = query_parameters->get('species');
+			};
+			post '/add' => sub {};
+			get '/delete' => sub {
+				my @ids = query_parameters->get_all('id');
+			};
+		};
+
+		prefix '/assign_otu' => sub {
+			get '/otu' => sub {};
+		};
+
+		prefix '/place' => sub {
+			get '/otu' => sub{
+				my @otus = query_parameters->get_all('otu');
+			};
+			get '/name' => sub{
+				my $order = query_parameters->get('order');
+				my $family = query_parameters->get('family');
+				my $genus = query_parameters->get('genus');
+				my $species = query_parameters->get('species');
+			};
+		};
+
+		prefix '/profile' => sub {
+			get '/otu' => sub{
+				my @otus = query_parameters->get_all('otu');
+			};
+			get '/name' => sub{
+				my $order = query_parameters->get('order');
+				my $family = query_parameters->get('family');
+				my $genus = query_parameters->get('genus');
+				my $species = query_parameters->get('species');
+			};
+			post '/add' => sub{};
+			get '/delete' => sub{
+				my @ids = query_parameters->get_all('id');
+			};
+		};
+
+		prefix '/otu' => sub {
+			post '/add' => sub{};
+			get '/delete' => sub{
+				my @ids = query_parameters->get_all('id');
+			};
+		};
+
+		prefix '/dataset' => sub {
+			post '/add' => sub{};
+			get '/delete' => sub{
+				my @ids = query_parameters->get_all('id');
+			};
+		};
+	};
+};
+
 sub _db { # {{{
 	if (!$DB) {
 		$DB = DBI->connect("dbi:SQLite:dbname=spam.db", "", "", { RaiseError => 1 })
