@@ -16,6 +16,9 @@ use DBD::Pg;
 use Dancer::Logger::Met;
 
 
+our $VERSION = '0.01';
+
+
 my $name = __PACKAGE__;
 my $DB;
 our $CONFIG = {
@@ -30,6 +33,13 @@ our $CONFIG = {
 	uid          => 'met',
 	pidfile      => '/run/met-api.pid',
 	log_file     => '/var/log/met-api.log',
+	db           => {
+		host   => 'local socket',
+		port   =>  5432,
+		user   => 'met',
+		dbname => 'met',
+		pass   => '',
+	}
 };
 
 get '/' => sub { # {{{
@@ -51,15 +61,29 @@ get '/' => sub { # {{{
 
 prefix '/met' => sub {
 	prefix '/v1' => sub {
+		# TODO - all deletes need to be privledged access via admin management
 		prefix '/taxa' => sub {
 			get '/otu' => sub {
 				my @otus = query_parameters->get_all('otu');
 			};
 			get '/name' => sub {
+				my $sth = _db->prepare("SELECT * FROM taxa WHERE order = '?' AND family = '?' AND genus = '?'") or error "failed to prepare "._db->errstr;
 				my $order = query_parameters->get('order');
 				my $family = query_parameters->get('family');
 				my $genus = query_parameters->get('genus');
 				my $species = query_parameters->get('species');
+				$sth->execute($order, $family, $genus, $species);
+				my @row;
+				my $data = ();
+				my $i = 0;
+				while (@row = $sth->fetchrow_array()) {
+					for (@row) {
+						push @{$data->[$i]}, $_;
+					}
+					$i++;
+				}
+				content_type 'application/json';
+				return encode_json($data);
 			};
 			post '/add' => sub {};
 			get '/delete' => sub {
@@ -83,6 +107,7 @@ prefix '/met' => sub {
 			};
 		};
 
+		# TODO rename - this collides with user profiles
 		prefix '/profile' => sub {
 			get '/otu' => sub{
 				my @otus = query_parameters->get_all('otu');
@@ -93,15 +118,19 @@ prefix '/met' => sub {
 				my $genus = query_parameters->get('genus');
 				my $species = query_parameters->get('species');
 			};
-			post '/add' => sub{};
-			get '/delete' => sub{
+			post   '' => sub {
+			
+			};
+			delete '' => sub {
 				my @ids = query_parameters->get_all('id');
 			};
 		};
 
 		prefix '/otu' => sub {
-			post '/add' => sub{};
-			get '/delete' => sub{
+			post ''   => sub { # add
+				
+			};
+			delete '' => sub{
 				my @ids = query_parameters->get_all('id');
 			};
 		};
@@ -117,18 +146,12 @@ prefix '/met' => sub {
 
 sub _db { # {{{
 	if (!$DB) {
-		$DB = DBI->connect("dbi:SQLite:dbname=spam.db", "", "", { RaiseError => 1 })
+		my $addr = ",host=$CONFIG->{db}{host},port=$CONFIG->{db}{port}";
+		if ($CONFIG->{db}{host} =~ m/local socket/) {
+			$addr = '';
+		}
+		$DB = DBI->connect("dbi:Pg:dbname=$CONFIG->{db}{dbname}$addr", $CONFIG->{db}{user}, $CONFIG->{db}{pass}, { RaiseError => 1 })
 			or error "failed to connect to spam.db: ".$DBI::errstr;
-		$DB->do("PRAGMA synchronous = OFF;") or die "failed to turn off synchronous pragma: ".$DB->errstr;
-		$DB->do("PRAGMA journal_mode = MEMORY;") or die "failed to set journal pragma to memory: ".$DB->errstr;
-		$DB->do("PRAGMA threads = 128;") or die "failed to set auxillary thread limit: ".$DB->errstr;
-		#my $sth = $dbh->prepare("INSERT INTO spam (ip, host, received, country, email_from, email_to, reason_id, reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-		#$dbh->begin_work or die "failed to begin bulk import: ".$dbh->errstr;;
-
-		#$dbh->commit or die "failed to commit bulk import: ".$dbh->errstr;
-		#$dbh->do("CREATE INDEX _all_i ON SPAM(ip,host,received,country,email_from,email_to,reason_id);")
-		#	or die "failed to create _all_i index: ".$dbh->errstr;
-		#$dbh->disconnect or die "failed to disconnect from spam.db: ".$dbh->errstr;
 	}
 	return $DB;
 }
@@ -186,14 +209,6 @@ $server->run(sub {Met::API->dance(Dancer::Request->new(env => shift))});
 =head1 NAME
 
 Met::API - The great new Met::API!
-
-=head1 VERSION
-
-Version 0.01
-
-=cut
-
-our $VERSION = '0.01';
 
 
 =head1 SYNOPSIS
