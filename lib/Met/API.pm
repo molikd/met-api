@@ -106,8 +106,7 @@ prefix '/met' => sub {
 		};
 	};
 
-	# TODO rename - this collides with user profiles
-	prefix '/profile' => sub {
+	prefix '/functional_profile' => sub {
 		get '/otu' => sub{
 			my @otus = query_parameters->get_all('otu');
 		};
