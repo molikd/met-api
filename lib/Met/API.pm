@@ -66,9 +66,9 @@ prefix '/met' => sub {
 			my @otus = query_parameters->get_all('otu');
 		};
 		get '/name' => sub {
-			my $sth = _db->prepare("SELECT * FROM taxa WHERE order = '?' AND family = '?' AND genus = '?'") or error "failed to prepare "._db->errstr;
-			my $order = query_parameters->get('order');
-			my $family = query_parameters->get('family');
+			my $sth = _db->prepare("SELECT * FROM taxa WHERE ordo = '?' AND familia = '?' AND genus = '?'") or error "failed to prepare "._db->errstr;
+			my $order = query_parameters->get('ordo');
+			my $family = query_parameters->get('familia');
 			my $genus = query_parameters->get('genus');
 			my $species = query_parameters->get('species');
 			$sth->execute($order, $family, $genus, $species);
