@@ -60,86 +60,84 @@ get '/' => sub { # {{{
 # }}}
 
 prefix '/met' => sub {
-	prefix '/v1' => sub {
-		# TODO - all deletes need to be privledged access via admin management
-		prefix '/taxa' => sub {
-			get '/otu' => sub {
-				my @otus = query_parameters->get_all('otu');
-			};
-			get '/name' => sub {
-				my $sth = _db->prepare("SELECT * FROM taxa WHERE order = '?' AND family = '?' AND genus = '?'") or error "failed to prepare "._db->errstr;
-				my $order = query_parameters->get('order');
-				my $family = query_parameters->get('family');
-				my $genus = query_parameters->get('genus');
-				my $species = query_parameters->get('species');
-				$sth->execute($order, $family, $genus, $species);
-				my @row;
-				my $data = ();
-				my $i = 0;
-				while (@row = $sth->fetchrow_array()) {
-					for (@row) {
-						push @{$data->[$i]}, $_;
-					}
-					$i++;
+	# TODO - all deletes need to be privledged access via admin management
+	prefix '/taxa' => sub {
+		get '/otu' => sub {
+			my @otus = query_parameters->get_all('otu');
+		};
+		get '/name' => sub {
+			my $sth = _db->prepare("SELECT * FROM taxa WHERE order = '?' AND family = '?' AND genus = '?'") or error "failed to prepare "._db->errstr;
+			my $order = query_parameters->get('order');
+			my $family = query_parameters->get('family');
+			my $genus = query_parameters->get('genus');
+			my $species = query_parameters->get('species');
+			$sth->execute($order, $family, $genus, $species);
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
 				}
-				content_type 'application/json';
-				return encode_json($data);
-			};
-			post '/add' => sub {};
-			get '/delete' => sub {
-				my @ids = query_parameters->get_all('id');
-			};
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
 		};
-
-		prefix '/assign_otu' => sub {
-			get '/otu' => sub {};
+		post '/add' => sub {};
+		get '/delete' => sub {
+			my @ids = query_parameters->get_all('id');
 		};
+	};
 
-		prefix '/place' => sub {
-			get '/otu' => sub{
-				my @otus = query_parameters->get_all('otu');
-			};
-			get '/name' => sub{
-				my $order = query_parameters->get('order');
-				my $family = query_parameters->get('family');
-				my $genus = query_parameters->get('genus');
-				my $species = query_parameters->get('species');
-			};
+	prefix '/assign_otu' => sub {
+		get '/otu' => sub {};
+	};
+
+	prefix '/place' => sub {
+		get '/otu' => sub{
+			my @otus = query_parameters->get_all('otu');
 		};
+		get '/name' => sub{
+			my $order = query_parameters->get('order');
+			my $family = query_parameters->get('family');
+			my $genus = query_parameters->get('genus');
+			my $species = query_parameters->get('species');
+		};
+	};
 
-		# TODO rename - this collides with user profiles
-		prefix '/profile' => sub {
-			get '/otu' => sub{
-				my @otus = query_parameters->get_all('otu');
-			};
-			get '/name' => sub{
-				my $order = query_parameters->get('order');
-				my $family = query_parameters->get('family');
-				my $genus = query_parameters->get('genus');
-				my $species = query_parameters->get('species');
-			};
-			post   '' => sub {
+	# TODO rename - this collides with user profiles
+	prefix '/profile' => sub {
+		get '/otu' => sub{
+			my @otus = query_parameters->get_all('otu');
+		};
+		get '/name' => sub{
+			my $order = query_parameters->get('order');
+			my $family = query_parameters->get('family');
+			my $genus = query_parameters->get('genus');
+			my $species = query_parameters->get('species');
+		};
+		post   '' => sub {
 			
-			};
-			delete '' => sub {
-				my @ids = query_parameters->get_all('id');
-			};
 		};
-
-		prefix '/otu' => sub {
-			post ''   => sub { # add
-				
-			};
-			delete '' => sub{
-				my @ids = query_parameters->get_all('id');
-			};
+		delete '' => sub {
+			my @ids = query_parameters->get_all('id');
 		};
+	};
 
-		prefix '/dataset' => sub {
-			post '/add' => sub{};
-			get '/delete' => sub{
-				my @ids = query_parameters->get_all('id');
-			};
+	prefix '/otu' => sub {
+		post ''   => sub { # add
+			
+		};
+		delete '' => sub{
+			my @ids = query_parameters->get_all('id');
+		};
+	};
+
+	prefix '/dataset' => sub {
+		post '/add' => sub{};
+		get '/delete' => sub{
+			my @ids = query_parameters->get_all('id');
 		};
 	};
 };
