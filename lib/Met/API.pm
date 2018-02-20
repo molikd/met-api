@@ -66,12 +66,12 @@ prefix '/met' => sub {
 			my @otus = query_parameters->get_all('otu');
 		};
 		get '/name' => sub {
-			my $sth = _db->prepare("SELECT * FROM taxa WHERE ordo = '?' AND familia = '?' AND genus = '?'") or error "failed to prepare "._db->errstr;
-			my $order = query_parameters->get('ordo');
-			my $family = query_parameters->get('familia');
-			my $genus = query_parameters->get('genus');
+			my $sth     = _db->prepare("SELECT * FROM taxa WHERE ordo = '?' AND familia = '?' AND genus = '?' AND species = '?'") or error "failed to prepare "._db->errstr;
+			my $order   = query_parameters->get('ordo');
+			my $family  = query_parameters->get('familia');
+			my $genus   = query_parameters->get('genus');
 			my $species = query_parameters->get('species');
-			$sth->execute($order, $family, $genus, $species);
+			$sth->execute($order, $family, $genus, $species) or error "failed to execute stmt "._db->errstr;
 			my @row;
 			my $data = ();
 			my $i = 0;
@@ -148,7 +148,7 @@ sub _db { # {{{
 			$addr = '';
 		}
 		$DB = DBI->connect("dbi:Pg:dbname=$CONFIG->{db}{dbname}$addr", $CONFIG->{db}{user}, $CONFIG->{db}{pass}, { RaiseError => 1 })
-			or error "failed to connect to spam.db: ".$DBI::errstr;
+			or error "failed to connect to [$CONFIG->{db}{host}/$CONFIG->{db}{dbname}] : ".$DBI::errstr;
 	}
 	return $DB;
 }
