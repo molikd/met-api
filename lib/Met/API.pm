@@ -22,8 +22,6 @@ our $VERSION = '0.01';
 my $name = __PACKAGE__;
 my $DB;
 our $CONFIG = {
-	log          => 'met',
-	session      => 'met',
 	log_level    => 'info',
 	log_facility => 'daemon',
 	workers      =>  8,
@@ -119,18 +117,18 @@ prefix '/met' => sub {
 		post   '' => sub {
 			
 		};
-		delete '' => sub {
-			my @ids = query_parameters->get_all('id');
-		};
+		#delete '' => sub {
+		#	my @ids = query_parameters->get_all('id');
+		#};
 	};
 
 	prefix '/otu' => sub {
 		post ''   => sub { # add
 			
 		};
-		delete '' => sub{
-			my @ids = query_parameters->get_all('id');
-		};
+		#delete '' => sub{
+		#	my @ids = query_parameters->get_all('id');
+		#};
 	};
 
 	prefix '/dataset' => sub {
@@ -175,19 +173,15 @@ sub _configure # {{{
 		$CONFIG->{$_} = $OPTIONS{$_};
 	}
 
-	if ($CONFIG->{log} =~ m/syslog/i) {
-		set syslog   => { facility => $CONFIG->{log_facility}, ident => __PACKAGE__, };
-	} elsif($CONFIG->{log} =~ m/file/i) {
-		set log_file => $CONFIG->{log_file};
-	}
-	set logger       => $CONFIG->{log};
+	set syslog   => { facility => $CONFIG->{log_facility}, ident => __PACKAGE__, };
+	set logger   => 'met';
 	if ($CONFIG->{debug}) {
 		$CONFIG->{log_level} = 'debug';
 		set show_errors =>  1;
 	}
 	set log           => $CONFIG->{log_level};
 	set redis_session => { server => 'localhost', sock => '', database => '', password => ''};
-	set session       => $CONFIG->{session};
+	set session       => 'met';
 	set logger_format => '%h %L %m';
 
 	# set serializer   => 'JSON';

@@ -6,11 +6,11 @@ use warnings;
 use base 'Dancer::Logger::Abstract';
 use File::Basename 'basename';
 use Sys::Syslog qw(:DEFAULT setlogsock);
-
 use Dancer::Config 'setting';
 
 sub init {
 	my ($self) = @_;
+
 	setlogsock('unix');
 
 	my $conf = setting('syslog');
