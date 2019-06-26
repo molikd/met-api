@@ -60,8 +60,8 @@ get '/' => sub { # {{{
 prefix '/met' => sub {
 	# TODO - all deletes need to be privledged access via admin management
 	prefix '/taxa' => sub {
-		get '/otu' => sub {
-			my @otus = query_parameters->get_all('otu');
+		get '/asv' => sub {
+			my @otus = query_parameters->get_all('asv');
 		};
 		get '/name' => sub {
 			my $sth     = _db->prepare("SELECT * FROM taxa WHERE ordo = '?' AND familia = '?' AND genus = '?' AND species = '?'") or error "failed to prepare "._db->errstr;
@@ -88,13 +88,26 @@ prefix '/met' => sub {
 		};
 	};
 
-	prefix '/assign_otu' => sub {
-		get '/otu' => sub {};
+	prefix '/assign_asv' => sub {
+		get '/asv' => sub {};
 	};
 
 	prefix '/place' => sub {
-		get '/otu' => sub{
-			my @otus = query_parameters->get_all('otu');
+		get '/asv' => sub{
+			my $sth  = _db->prepare("SELECT * FROM place WHERE asv = '?'") or error "failed to prepare "._db->errstr;
+			my @otus = query_parameters->get_all('asv');
+			$sth->execute($otu) or error "failed to execute stmt "._db->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
 		};
 		get '/name' => sub{
 			my $order = query_parameters->get('order');
@@ -105,8 +118,8 @@ prefix '/met' => sub {
 	};
 
 	prefix '/functional_profile' => sub {
-		get '/otu' => sub{
-			my @otus = query_parameters->get_all('otu');
+		get '/asv' => sub{
+			my @asvs = query_parameters->get_all('asv');
 		};
 		get '/name' => sub{
 			my $order = query_parameters->get('order');
@@ -115,16 +128,16 @@ prefix '/met' => sub {
 			my $species = query_parameters->get('species');
 		};
 		post   '' => sub {
-			
+
 		};
 		#delete '' => sub {
 		#	my @ids = query_parameters->get_all('id');
 		#};
 	};
 
-	prefix '/otu' => sub {
+	prefix '/asv' => sub {
 		post ''   => sub { # add
-			
+
 		};
 		#delete '' => sub{
 		#	my @ids = query_parameters->get_all('id');
@@ -199,14 +212,12 @@ $server->run(sub {Met::API->dance(Dancer::Request->new(env => shift))});
 
 =head1 NAME
 
-Met::API - The great new Met::API!
+Met::API - metagenomic enrichment analysis Met::API!
 
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
+This code
 
 
 =head1 EXPORT
@@ -265,7 +276,7 @@ L<http://search.cpan.org/dist/Met-API/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2018 Dan Molik.
+Copyright 2018 Daniel Molik, David Molik.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the the Artistic License (2.0). You may obtain a
