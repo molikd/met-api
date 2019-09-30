@@ -150,6 +150,31 @@ prefix '/met' => sub {
 			my @ids = query_parameters->get_all('id');
 		};
 	};
+
+	prefix '/search' => sub {
+		get '/asv' => sub{
+			my $sth   = _db->prepare("SELECT * FROM canidate_asv_search WHERE asv = '?'") or error "failed to prepare "._db->errstr;
+			my $asv   = query_parameters->get('asv');
+			$sth->execute($asv) or error "failed to execute stmt "._db->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					#TODO, INTERNAL ALIGNMENT
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			
+			content_type 'application/json';
+			return encode_json($data);
+		};
+	};
+
+	prefix '/compare' => sub {
+	
+	};
 };
 
 sub _db { # {{{
