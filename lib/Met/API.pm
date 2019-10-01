@@ -30,7 +30,7 @@ our $CONFIG = {
 	log_facility => 'daemon',
 	workers      =>  8,
 	keepalive    =>  300,
-	port         =>  8000,
+	port         =>  5000,
 	gid          => 'met',
 	uid          => 'met',
 	pidfile      => '/run/met-api.pid',
@@ -192,23 +192,8 @@ prefix '/met' => sub {
 			my $dataset_two = query_parameters->get('dataset_two');
 			$sth_one->execute($dataset_one) or error "failed to execute stmt "._db->errstr;
 			$sth_two->execute($dataset_two) or error "failed to execute stmt "._db->errstr;
-			my $data_one = ();
-			my $data_two = ();
-			while (@row = $sth_one->fetchrow_array()) {
-				for (@row) {
-					push @{$data_one->[$i]}, $_;
-				}
-				$i++;
-			}
-			$i=0;
-			while (@row = $sth_two->fetchrow_array()) {
-				for (@row) {
-					push @{$data_two->[$i]}, $_;
-				}
-				$i++;
-			#CALCULATE Simularity. 
-			}
-			
+
+			#TODO finish this. add bray curtis simularity.
 		};
 	};
 };
