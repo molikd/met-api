@@ -29,7 +29,7 @@ our $CONFIG = {
 	log_level    => 'info',
 	log_facility => 'daemon',
 	workers      =>  8,
-	keepalive    =>  150,
+	keepalive    =>  300,
 	port         =>  8000,
 	gid          => 'met',
 	uid          => 'met',
@@ -185,7 +185,31 @@ prefix '/met' => sub {
 	};
 
 	prefix '/compare' => sub {
-	
+		get '/dataset' => sub {
+			my $sth_one = _db->prepare("SELECT dataset_asv_name(dataset_one)") or error "failed to prepare "._db->errstr;
+			my $sth_two = _db->prepare("SELECT dataset_asv_name(dataset_two)") or error "failed to prepare "._db->errstr;
+			my $dataset_one = query_parameters->get('dataset_one');
+			my $dataset_two = query_parameters->get('dataset_two');
+			$sth_one->execute($dataset_one) or error "failed to execute stmt "._db->errstr;
+			$sth_two->execute($dataset_two) or error "failed to execute stmt "._db->errstr;
+			my $data_one = ();
+			my $data_two = ();
+			while (@row = $sth_one->fetchrow_array()) {
+				for (@row) {
+					push @{$data_one->[$i]}, $_;
+				}
+				$i++;
+			}
+			$i=0;
+			while (@row = $sth_two->fetchrow_array()) {
+				for (@row) {
+					push @{$data_two->[$i]}, $_;
+				}
+				$i++;
+			#CALCULATE Simularity. 
+			}
+			
+		};
 	};
 };
 
