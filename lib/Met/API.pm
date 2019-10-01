@@ -15,8 +15,12 @@ use DBI;
 use DBD::Pg;
 use Dancer::Logger::Met;
 
+use Bio::Tools::dpAlign;
+use Bio::SeqIO;
+use Bio::SimpleAlign;
+use Bio::AlignIO;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 my $name = __PACKAGE__;
@@ -151,18 +155,26 @@ prefix '/met' => sub {
 		};
 	};
 
+	#TODO test, and look at output
 	prefix '/search' => sub {
 		get '/asv' => sub{
-			my $sth   = _db->prepare("SELECT * FROM canidate_asv_search WHERE asv = '?'") or error "failed to prepare "._db->errstr;
+			my $sth   = _db->prepare("SELECT * FROM candidate_asv_search WHERE asv = '?'") or error "failed to prepare "._db->errstr;
 			my $asv   = query_parameters->get('asv');
 			$sth->execute($asv) or error "failed to execute stmt "._db->errstr;
+			my $seq1 = Bio::SeqIO->new(-string => $asv, -format => 'fasta');
+			my $factory = new dpAlign(-match => 3,
+				-mismatch => -1,
+				-gap => 3,
+				-ext => 1,
+				-alg => Bio::Tools::dpAlign::DPALIGN_LOCAL_MILLER_MYERS);
 			my @row;
 			my $data = ();
 			my $i = 0;
 			while (@row = $sth->fetchrow_array()) {
 				for (@row) {
-					#TODO, INTERNAL ALIGNMENT
-					push @{$data->[$i]}, $_;
+					my $seq2 = Bio::SeqIO->new(-string => $_, -format => 'fasta');
+					my $aln = $factory->pairwise_alignment($seq1,$seq2)
+					push @{$data->[$i]}, $aln;
 				}
 				$i++;
 			}
