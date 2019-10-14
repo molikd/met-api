@@ -192,8 +192,23 @@ prefix '/met' => sub {
 			my $dataset_two = query_parameters->get('dataset_two');
 			$sth_one->execute($dataset_one) or error "failed to execute stmt "._db->errstr;
 			$sth_two->execute($dataset_two) or error "failed to execute stmt "._db->errstr;
-
-			#TODO finish this. add bray curtis simularity.
+			my $data_one = (); my $data_two = ();
+			my $i = 0;
+			my @row;
+			while (@row = $sth_one->fetchrow_array() {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			$i = 0;
+			while (@row = $sth_two->fetchrow_array() {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			#TODO compare and return distance
 		};
 	};
 };
