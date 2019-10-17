@@ -337,7 +337,7 @@ L<http://search.cpan.org/dist/Met-API/>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2018 Daniel Molik, David Molik.
+Copyright 2019 David Molik.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the the Artistic License (2.0). You may obtain a
