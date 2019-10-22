@@ -15,10 +15,10 @@ use DBI;
 use DBD::Pg;
 use Dancer::Logger::Met;
 
-use Bio::Tools::dpAlign;
-use Bio::SeqIO;
-use Bio::SimpleAlign;
-use Bio::AlignIO;
+#use Bio::Tools::dpAlign;
+#use Bio::SeqIO;
+#use Bio::SimpleAlign;
+#use Bio::AlignIO;
 
 our $VERSION = '0.02';
 
@@ -100,7 +100,7 @@ prefix '/met' => sub {
 		get '/asv' => sub{
 			my $sth  = _db->prepare("SELECT * FROM place WHERE asv = '?'") or error "failed to prepare "._db->errstr;
 			my @otus = query_parameters->get_all('asv');
-			$sth->execute($otu) or error "failed to execute stmt "._db->errstr;
+			$sth->execute($otus[0]) or error "failed to execute stmt "._db->errstr;
 			my @row;
 			my $data = ();
 			my $i = 0;
@@ -156,33 +156,33 @@ prefix '/met' => sub {
 	};
 
 	#TODO test, and look at output
-	prefix '/search' => sub {
-		get '/asv' => sub{
-			my $sth   = _db->prepare("SELECT * FROM candidate_asv_search WHERE asv = '?'") or error "failed to prepare "._db->errstr;
-			my $asv   = query_parameters->get('asv');
-			$sth->execute($asv) or error "failed to execute stmt "._db->errstr;
-			my $seq1 = Bio::SeqIO->new(-string => $asv, -format => 'fasta');
-			my $factory = new dpAlign(-match => 3,
-				-mismatch => -1,
-				-gap => 3,
-				-ext => 1,
-				-alg => Bio::Tools::dpAlign::DPALIGN_LOCAL_MILLER_MYERS);
-			my @row;
-			my $data = ();
-			my $i = 0;
-			while (@row = $sth->fetchrow_array()) {
-				for (@row) {
-					my $seq2 = Bio::SeqIO->new(-string => $_, -format => 'fasta');
-					my $aln = $factory->pairwise_alignment($seq1,$seq2)
-					push @{$data->[$i]}, $aln;
-				}
-				$i++;
-			}
-			
-			content_type 'application/json';
-			return encode_json($data);
-		};
-	};
+	#prefix '/search' => sub {
+	#	get '/asv' => sub{
+	#		my $sth   = _db->prepare("SELECT * FROM candidate_asv_search WHERE asv = '?'") or error "failed to prepare "._db->errstr;
+	#		my $asv   = query_parameters->get('asv');
+	#		$sth->execute($asv) or error "failed to execute stmt "._db->errstr;
+	#		my $seq1 = Bio::SeqIO->new(-string => $asv, -format => 'fasta');
+	#		my $factory = new dpAlign(-match => 3,
+	#			-mismatch => -1,
+	#			-gap => 3,
+	#			-ext => 1,
+	#			-alg => Bio::Tools::dpAlign::DPALIGN_LOCAL_MILLER_MYERS);
+	#		my @row;
+	#		my $data = ();
+	#		my $i = 0;
+	#		while (@row = $sth->fetchrow_array()) {
+	#			for (@row) {
+	#				my $seq2 = Bio::SeqIO->new(-string => $_, -format => 'fasta');
+	#				my $aln = $factory->pairwise_alignment($seq1,$seq2)
+	#				push @{$data->[$i]}, $aln;
+	#			}
+	#			$i++;
+	#		}
+	#		
+	#		content_type 'application/json';
+	#		return encode_json($data);
+	#	};
+	#};
 
 	prefix '/compare' => sub {
 		get '/dataset' => sub {
@@ -197,20 +197,23 @@ prefix '/met' => sub {
 			my $data_one = (); my $data_two = ();
 			my $i = 0;
 			my @row;
-			while (@row = $sth_one->fetchrow_array() {
+			my $data = ();
+			while (@row = $sth_one->fetchrow_array()) {
 				for (@row) {
 					push @{$data->[$i]}, $_;
 				}
 				$i++;
 			}
 			$i = 0;
-			while (@row = $sth_two->fetchrow_array() {
+			while (@row = $sth_two->fetchrow_array()) {
 				for (@row) {
 					push @{$data->[$i]}, $_;
 				}
 				$i++;
 			}
 
+			content_type 'application/json';
+			return encode_json($data);
 			#TODO compare and return distance
 		};
 	};

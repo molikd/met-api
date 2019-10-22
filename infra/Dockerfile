@@ -1,14 +1,10 @@
-FROM alpine:3.7
-RUN apk update && \
-    apk add wget && \
-    apk add perl && \
-    apk add perl-dev && \
-    apk add make && \
-    apk add g++ && \
-    wget https://cpanmin.us/ && \
-    perl index.html App::cpanminus && \
-    cpanm Dancer2 && \
-    rm index.html
+FROM registry.k8s.brgl.org/brgl/perl:0.0.1
 
-WORKDIR /root
+COPY . /home/met/met-api
 
+RUN apk update && apk add --no-cache --virtual .build-dependencies make \
+	&& cd /home/met/met-api && perl Makefile.PL && make && make install \
+	&& cd / \
+	&& apk del .build-dependencies \
+	&& rm -rf /var/cache/apk/* \
+	&& rm -rf /home/met
