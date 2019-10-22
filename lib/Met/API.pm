@@ -188,6 +188,8 @@ prefix '/met' => sub {
 		get '/dataset' => sub {
 			my $sth_one = _db->prepare("SELECT dataset_asv_name(dataset_one)") or error "failed to prepare "._db->errstr;
 			my $sth_two = _db->prepare("SELECT dataset_asv_name(dataset_two)") or error "failed to prepare "._db->errstr;
+			# do I want to use: Bio::Community::Meta?
+			# table is asv_id, sequence, amount_found, name
 			my $dataset_one = query_parameters->get('dataset_one');
 			my $dataset_two = query_parameters->get('dataset_two');
 			$sth_one->execute($dataset_one) or error "failed to execute stmt "._db->errstr;
@@ -208,6 +210,7 @@ prefix '/met' => sub {
 				}
 				$i++;
 			}
+
 			#TODO compare and return distance
 		};
 	};
