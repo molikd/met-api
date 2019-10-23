@@ -206,7 +206,11 @@ my $server = Plack::Handler::Gazelle->new(
 	port    => $CONFIG->{port},
 	workers => $CONFIG->{workers},
 );
-$server->run(sub {Met::API->dance(Dancer::Request->new(env => shift))});
+
+sub run
+{
+	$server->run(sub {Met::API->dance(Dancer::Request->new(env => shift))});
+}
 
 =head1 NAME
 
