@@ -234,7 +234,7 @@ if you don't export anything, such as for a purely object-oriented module.
 
 =head1 AUTHOR
 
-Dan Molik, C<< <dan at d3fy.net> >>
+Dan Molik, C<< <dan at brgl.org> >>
 
 =head1 BUGS
 

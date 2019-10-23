@@ -48,4 +48,24 @@ sub _log {
 
 1;
 
+=head1 NAME
+
+Dancer::Logger::Met - a built in syslogger for Dancer
+
+=head1 SYNOPSIS
+
+    use Dancer::Logger::Met;
+    set logger => 'met';
+    set syslog   => { facility => $CONFIG->{log_facility}, ident => __PACKAGE__, };
+
+=head1 AUTHOR
+
+Dan Molik, C<< <dan at brgl.org> >>
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc Dancer::Logger::Met
+
 __END__

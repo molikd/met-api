@@ -112,4 +112,26 @@ sub redis {
 
 1; # End of Dancer::Session::Redis
 
+=head1 NAME
+
+Dancer::Session::Met - a built in session handler for Dancer
+
+=head1 SYNOPSIS
+
+Session-Met leverages hiredis and redis-db to be fast and efficient
+
+    use Dancer::Logger::Met;
+    set logger => 'met';
+    set syslog   => { facility => $CONFIG->{log_facility}, ident => __PACKAGE__, };
+
+=head1 AUTHOR
+
+Dan Molik, C<< <dan at brgl.org> >>
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc Dancer::Session::Met
+
 __END__
