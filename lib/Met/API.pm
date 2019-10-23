@@ -149,6 +149,18 @@ prefix '/met' => sub {
 			my @ids = query_parameters->get_all('id');
 		};
 	};
+
+	# job handled requests
+
+	prefix '/compare' => sub {
+		prefix '/datasets' => sub {};
+	};
+
+	prefix '/search' => sub {
+		get '/asv' => sub {};
+	};
+
+
 };
 sub _db { # {{{
 	if (!$DB) {
