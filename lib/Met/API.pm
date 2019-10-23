@@ -184,8 +184,8 @@ sub _configure # {{{
 		$CONFIG->{$_} = $OPTIONS{$_};
 	}
 
-	set syslog   => { facility => $CONFIG->{log_facility}, ident => __PACKAGE__, };
-	set logger   => 'met';
+	#set syslog   => { facility => $CONFIG->{log_facility}, ident => __PACKAGE__, };
+	set logger   => 'console';
 	if ($CONFIG->{debug}) {
 		$CONFIG->{log_level} = 'debug';
 		set show_errors =>  1;
