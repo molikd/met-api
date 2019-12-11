@@ -81,7 +81,14 @@ prefix '/met' => sub {
 			content_type 'application/json';
 			return encode_json($data);
 		};
-		post '/add' => sub {};
+		post '/add' => sub {
+			my $sth    = _db->prepare("INSERT INTO taxa (ordo, familia, genus, species) VALUES ordo = '?' AND familia ='?' AND genus = '?' AND species = '?'") or error "failed to prepare "._db->errstr;
+			my $order   = query_parameters->get('ordo');
+			my $family  = query_parameters->get('familia');
+			my $genus   = query_parameters->get('genus');
+			my $species = query_parameters->get('species');
+			$sth->execute($order, $family, $genus, $species) or error "failed to execute stmt "._db->errstr;
+		};
 		get '/delete' => sub {
 			my @ids = query_parameters->get_all('id');
 		};
