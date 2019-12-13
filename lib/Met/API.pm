@@ -11,9 +11,11 @@ use YAML::XS qw/LoadFile/;
 use JSON::XS qw/encode_json decode_json/;
 use Plack::Handler::Gazelle;
 
-use DBI;
-use DBD::Pg;
+#use DBI;
+#use DBD::Pg;
+use Dancer::Plugin::Database;
 use Dancer::Logger::Met;
+
 
 our $VERSION = '0.02';
 
@@ -33,8 +35,8 @@ our $CONFIG = {
 	db           => {
 		host   => 'local socket',
 		port   =>  5432,
-		user   => 'met',
-		dbname => 'met',
+		user   => 'dmolik',
+		dbname => 'met_test',
 		pass   => '',
 	}
 };
