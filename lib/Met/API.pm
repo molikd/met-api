@@ -31,6 +31,18 @@ our $CONFIG = {
 	uid          => 'met',
 	pidfile      => '/run/met-api.pid',
 	log_file     => '/var/log/met-api.log',
+	plugins      => {
+		Database => {
+			connections => {
+				driver => 'Pg',
+				host   => 'localhost',
+				port   => '5432',
+				username => 'changeme',
+				dbname   => 'met',
+				password => 'changeme',
+			}
+		}
+	},
 	db           => {
 		host   => 'local socket',
 		port   =>  5432,
@@ -55,6 +67,7 @@ get '/' => sub { # {{{
 		</html>
 	|;
 };
+
 # }}}
 
 prefix '/met' => sub {
@@ -170,6 +183,7 @@ prefix '/met' => sub {
 
 
 };
+
 sub _db { # {{{
 	if (!$DB) {
 		my $addr = ",host=$CONFIG->{db}{host},port=$CONFIG->{db}{port}";
@@ -211,10 +225,11 @@ sub _configure # {{{
 		set show_errors =>  1;
 	}
 	set log           => $CONFIG->{log_level};
+	set plugins       => $CONFIG->{plugins};
 	set redis_session => { server => 'localhost', sock => '', database => '', password => ''};
 	set session       => 'met';
 	set logger_format => '%h %L %m';
-	set plugins       => { Database => {driver => "Pg"}};
+
 
 	# set serializer   => 'JSON';
 	# set content_type => 'application/json';
