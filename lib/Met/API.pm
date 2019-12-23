@@ -16,11 +16,10 @@ use Plack::Handler::Gazelle;
 use Dancer::Plugin::Database;
 use Dancer::Logger::Met;
 
-
 our $VERSION = '0.02';
 
-
 my $name = __PACKAGE__;
+my $dbh = database('met-db');
 my $DB;
 our $CONFIG = {
 	log_level    => 'info',
@@ -65,7 +64,7 @@ prefix '/met' => sub {
 			my @otus = query_parameters->get_all('asv');
 		};
 		get '/name' => sub {
-			my $sth     = _db->prepare("SELECT * FROM taxa WHERE ordo = '?' AND familia = '?' AND genus = '?' AND species = '?'") or error "failed to prepare "._db->errstr;
+			my $sth     = database->prepare("SELECT * FROM taxa WHERE ordo = '?' AND familia = '?' AND genus = '?' AND species = '?'") or error "failed to prepare ".database->errstr;
 			my $order   = query_parameters->get('ordo');
 			my $family  = query_parameters->get('familia');
 			my $genus   = query_parameters->get('genus');
@@ -84,7 +83,7 @@ prefix '/met' => sub {
 			return encode_json($data);
 		};
 		post '/add' => sub {
-			my $sth    = _db->prepare("INSERT INTO taxa (ordo, familia, genus, species) VALUES ordo = '?' AND familia ='?' AND genus = '?' AND species = '?'") or error "failed to prepare "._db->errstr;
+			my $sth    = database->prepare("INSERT INTO taxa (ordo, familia, genus, species) VALUES ordo = '?' AND familia ='?' AND genus = '?' AND species = '?'") or error "failed to prepare ".database->errstr;
 			my $order   = query_parameters->get('ordo');
 			my $family  = query_parameters->get('familia');
 			my $genus   = query_parameters->get('genus');
@@ -102,9 +101,9 @@ prefix '/met' => sub {
 
 	prefix '/place' => sub {
 		get '/asv' => sub{
-			my $sth  = _db->prepare("SELECT * FROM place WHERE asv = '?'") or error "failed to prepare "._db->errstr;
+			my $sth  = database->prepare("SELECT * FROM place WHERE asv = '?'") or error "failed to prepare ".database->errstr;
 			my @otus = query_parameters->get_all('asv');
-			$sth->execute($otus[0]) or error "failed to execute stmt "._db->errstr;
+			$sth->execute($otus[0]) or error "failed to execute stmt ".databae->errstr;
 			my @row;
 			my $data = ();
 			my $i = 0;
@@ -215,6 +214,7 @@ sub _configure # {{{
 	set redis_session => { server => 'localhost', sock => '', database => '', password => ''};
 	set session       => 'met';
 	set logger_format => '%h %L %m';
+	set plugins       => { Database => {driver => "Pg"}};
 
 	# set serializer   => 'JSON';
 	# set content_type => 'application/json';
