@@ -3,6 +3,7 @@ package Met::API;
 use strict;
 use warnings;
 
+use Switch;
 use Dancer qw/:syntax/;
 use Dancer::Response;
 
@@ -11,16 +12,13 @@ use YAML::XS qw/LoadFile/;
 use JSON::XS qw/encode_json decode_json/;
 use Plack::Handler::Gazelle;
 
-#use DBI;
-#use DBD::Pg;
 use Dancer::Plugin::Database;
 use Dancer::Logger::Met;
 
 our $VERSION = '0.02';
 
 my $name = __PACKAGE__;
-my $dbh = database('met-db');
-my $DB;
+
 our $CONFIG = {
 	log_level    => 'info',
 	log_facility => 'daemon',
@@ -31,20 +29,9 @@ our $CONFIG = {
 	uid          => 'met',
 	pidfile      => '/run/met-api.pid',
 	log_file     => '/var/log/met-api.log',
-	plugins      => {
-		Database => {
-			connections => {
-				driver => 'Pg',
-				host   => 'localhost',
-				port   => '5432',
-				username => 'changeme',
-				dbname   => 'met',
-				password => 'changeme',
-			}
-		}
-	},
 	db           => {
-		host   => 'local socket',
+		driver => 'Pg',
+		host   => 'local',
 		port   =>  5432,
 		user   => 'dmolik',
 		dbname => 'met_test',
@@ -73,16 +60,27 @@ get '/' => sub { # {{{
 prefix '/met' => sub {
 	# TODO - all deletes need to be privledged access via admin management
 	prefix '/taxa' => sub {
-		get '/asv' => sub {
-			my @otus = query_parameters->get_all('asv');
+		get '/asv' => sub {#TODO
+			my @otus = params->get_all('asv');
 		};
 		get '/name' => sub {
-			my $sth     = database->prepare("SELECT * FROM taxa WHERE ordo = '?' AND familia = '?' AND genus = '?' AND species = '?'") or error "failed to prepare ".database->errstr;
-			my $order   = query_parameters->get('ordo');
-			my $family  = query_parameters->get('familia');
-			my $genus   = query_parameters->get('genus');
-			my $species = query_parameters->get('species');
-			$sth->execute($order, $family, $genus, $species) or error "failed to execute stmt "._db->errstr;
+			my @arr;
+			for my $qy (qw/ordo familia genus species/) {
+				print STDERR params->{$qy}."\n";
+				next;
+				push ( @arr, ($qy, params->{$qy})) if params->{$qy};
+			}
+			my $str = "SELECT * FROM taxa WHERE ";
+			for my $lvl (@arr) {
+				$str .= " $lvl->[0] = '?'";
+			}
+			my $sth = database->prepare($str) or error "failed to prepare ".database->errstr;
+			switch(scalar @arr) {
+				case 4 { $sth->execute($arr[0][1], $arr[1][1], $arr[2][1], $arr[3][1]) or error "failed to execute stmt ".database->errstr; }
+				case 3 { $sth->execute($arr[0][1], $arr[1][1], $arr[2][1]) or error "failed to execute stmt ".database->errstr; }
+				case 2 { $sth->execute($arr[0][1], $arr[1][1]) or error "failed to execute stmt ".database->errstr; }
+				case 1 { $sth->execute($arr[0][1]) or error "failed to execute stmt ".database->errstr; }
+			}
 			my @row;
 			my $data = ();
 			my $i = 0;
@@ -95,28 +93,28 @@ prefix '/met' => sub {
 			content_type 'application/json';
 			return encode_json($data);
 		};
-		post '/add' => sub {
+		post '/add' => sub { #TODO
 			my $sth    = database->prepare("INSERT INTO taxa (ordo, familia, genus, species) VALUES ordo = '?' AND familia ='?' AND genus = '?' AND species = '?'") or error "failed to prepare ".database->errstr;
 			my $order   = query_parameters->get('ordo');
 			my $family  = query_parameters->get('familia');
 			my $genus   = query_parameters->get('genus');
 			my $species = query_parameters->get('species');
-			$sth->execute($order, $family, $genus, $species) or error "failed to execute stmt "._db->errstr;
+			$sth->execute($order, $family, $genus, $species) or error "failed to execute stmt ".database->errstr;
 		};
 		get '/delete' => sub {
 			my @ids = query_parameters->get_all('id');
 		};
 	};
 
-	prefix '/assign_asv' => sub {
+	prefix '/assign_asv' => sub { #TODO
 		get '/asv' => sub {};
 	};
 
 	prefix '/place' => sub {
-		get '/asv' => sub{
+		get '/asv' => sub{ #TODO post?
 			my $sth  = database->prepare("SELECT * FROM place WHERE asv = '?'") or error "failed to prepare ".database->errstr;
 			my @otus = query_parameters->get_all('asv');
-			$sth->execute($otus[0]) or error "failed to execute stmt ".databae->errstr;
+			$sth->execute($otus[0]) or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
 			my $i = 0;
@@ -129,7 +127,7 @@ prefix '/met' => sub {
 			content_type 'application/json';
 			return encode_json($data);
 		};
-		get '/name' => sub{
+		get '/name' => sub{ #TODO
 			my $order = query_parameters->get('order');
 			my $family = query_parameters->get('family');
 			my $genus = query_parameters->get('genus');
@@ -138,10 +136,10 @@ prefix '/met' => sub {
 	};
 
 	prefix '/functional_profile' => sub {
-		get '/asv' => sub{
+		get '/asv' => sub{ #TODO
 			my @asvs = query_parameters->get_all('asv');
 		};
-		get '/name' => sub{
+		get '/name' => sub{ #TODO
 			my $order = query_parameters->get('order');
 			my $family = query_parameters->get('family');
 			my $genus = query_parameters->get('genus');
@@ -156,7 +154,7 @@ prefix '/met' => sub {
 	};
 
 	prefix '/asv' => sub {
-		post ''   => sub { # add
+		post 'add'   => sub { #TODO
 
 		};
 		#delete '' => sub{
@@ -166,36 +164,27 @@ prefix '/met' => sub {
 
 	prefix '/dataset' => sub {
 		post '/add' => sub{};
-		get '/delete' => sub{
-			my @ids = query_parameters->get_all('id');
+		get '/delete' => sub{#TODO
+			my @ids = query_parameters->get_all('id');#TODO
 		};
 	};
 
 	# job handled requests
 
 	prefix '/compare' => sub {
-		prefix '/datasets' => sub {};
+		prefix '/datasets' => sub {
+			get '/asv' => sub{}; # TODO ASV and counts returned to analysis package for alignment 
+			get '/count' => sub{}; #TODO bray curtis between two datasets
+		};
 	};
 
 	prefix '/search' => sub {
 		get '/asv' => sub {};
+		#TODO search won't actually do a full search, were just going to grab the best guesses and send them over to the analysis package
 	};
 
 
 };
-
-sub _db { # {{{
-	if (!$DB) {
-		my $addr = ",host=$CONFIG->{db}{host},port=$CONFIG->{db}{port}";
-		if ($CONFIG->{db}{host} =~ m/local socket/) {
-			$addr = '';
-		}
-		$DB = DBI->connect("dbi:Pg:dbname=$CONFIG->{db}{dbname}$addr", $CONFIG->{db}{user}, $CONFIG->{db}{pass}, { RaiseError => 1 })
-			or error "failed to connect to [$CONFIG->{db}{host}/$CONFIG->{db}{dbname}] : ".$DBI::errstr;
-	}
-	return $DB;
-}
-# }}}
 
 sub _configure # {{{
 {
@@ -225,11 +214,14 @@ sub _configure # {{{
 		set show_errors =>  1;
 	}
 	set log           => $CONFIG->{log_level};
-	set plugins       => $CONFIG->{plugins};
 	set redis_session => { server => 'localhost', sock => '', database => '', password => ''};
 	set session       => 'met';
 	set logger_format => '%h %L %m';
-
+	if ($CONFIG->{db}{host} =~ m/local/) {
+		$CONFIG->{db}{host} = '';
+		delete $CONFIG->{db}{port};
+	}
+	database($CONFIG->{db});
 
 	# set serializer   => 'JSON';
 	# set content_type => 'application/json';
