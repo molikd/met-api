@@ -16,3 +16,4 @@ pod2htm*.tmp
 pm_to_blib
 Met-API-*
 Met-API-*.tar.gz
+*.DS_Store
