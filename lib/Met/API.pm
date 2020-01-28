@@ -60,7 +60,7 @@ get '/' => sub { # {{{
 prefix '/met' => sub {
 	# TODO - all deletes need to be privledged access via admin management
 	prefix '/taxa' => sub {
-		get '/asv' => sub {#TODO
+		get '/asv' => sub {#TODO, gets taxa associated with an asv
 			my @otus = params->get_all('asv');
 		};
 		get '/name' => sub {
@@ -101,17 +101,15 @@ prefix '/met' => sub {
 			my $species = query_parameters->get('species');
 			$sth->execute($order, $family, $genus, $species) or error "failed to execute stmt ".database->errstr;
 		};
+		# TODO taxa seq assign
+		# TODO taxa 
 		get '/delete' => sub {
 			my @ids = query_parameters->get_all('id');
 		};
 	};
 
-	prefix '/assign_asv' => sub { #TODO
-		get '/asv' => sub {};
-	};
-
-	prefix '/place' => sub {
-		get '/asv' => sub{ #TODO post?
+	prefix '/dataset' => sub {
+		get '/asv' => sub{ #TODO get dataset asvs and counts
 			my $sth  = database->prepare("SELECT * FROM place WHERE asv = '?'") or error "failed to prepare ".database->errstr;
 			my @otus = query_parameters->get_all('asv');
 			$sth->execute($otus[0]) or error "failed to execute stmt ".database->errstr;
@@ -127,60 +125,36 @@ prefix '/met' => sub {
 			content_type 'application/json';
 			return encode_json($data);
 		};
-		get '/name' => sub{ #TODO
+		get '/name' => sub{ #TODO get dataset taxons and counts
 			my $order = query_parameters->get('order');
 			my $family = query_parameters->get('family');
 			my $genus = query_parameters->get('genus');
 			my $species = query_parameters->get('species');
 		};
+		#TODO get dataset metadata
+		post '/add' => sub{};
+		post '/delete' => sub{};
 	};
 
-	prefix '/functional_profile' => sub {
-		get '/asv' => sub{ #TODO
-			my @asvs = query_parameters->get_all('asv');
-		};
-		get '/name' => sub{ #TODO
-			my $order = query_parameters->get('order');
-			my $family = query_parameters->get('family');
-			my $genus = query_parameters->get('genus');
-			my $species = query_parameters->get('species');
-		};
-		post   '' => sub {
+# TODO this will return taxa functional profile data, waiting for Stephanies updates.
+#	prefix '/functional_profile' => sub {
+#	};
 
-		};
-		#delete '' => sub {
-		#	my @ids = query_parameters->get_all('id');
-		#};
-	};
+	#TODO dataset metadata
+	#TODO project add/assignment
 
 	prefix '/asv' => sub {
-		post 'add'   => sub { #TODO
+		# TODO dataset assign
+		# TODO taxon assign
+		# TODO get an asv
+		post 'add'   => sub { }; #TODO, adds asv
 
-		};
-		#delete '' => sub{
-		#	my @ids = query_parameters->get_all('id');
-		#};
-	};
-
-	prefix '/dataset' => sub {
-		post '/add' => sub{};
-		get '/delete' => sub{#TODO
-			my @ids = query_parameters->get_all('id');#TODO
-		};
-	};
-
-	# job handled requests
-
-	prefix '/compare' => sub {
-		prefix '/datasets' => sub {
-			get '/asv' => sub{}; # TODO ASV and counts returned to analysis package for alignment 
-			get '/count' => sub{}; #TODO bray curtis between two datasets
 		};
 	};
 
 	prefix '/search' => sub {
-		get '/asv' => sub {};
-		#TODO search won't actually do a full search, were just going to grab the best guesses and send them over to the analysis package
+		get '/asv' => sub {}; #TODO search won't actually do a full search, were just going to grab the best guesses and send them over to the analysis package
+		#TODO get datasets with asv search
 	};
 
 
