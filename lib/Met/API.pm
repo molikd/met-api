@@ -60,8 +60,7 @@ get '/' => sub { # {{{
 prefix '/met' => sub {
 	# TODO - all deletes need to be privledged access via admin management
 	prefix '/taxa' => sub {
-		get '/asv' => sub {#TODO, gets taxa associated with an asv
-			my @otus = params->get_all('asv');
+		get '/asv' => sub {#TODO, SELECT * FROM asv,taxon_assignment,taxa WHERE asv.sequence = ? AND asv.id = taxon_assignment.id AND taxon_assignment.taxon_id = taxa.id;
 		};
 		get '/name' => sub {
 			my @arr;
@@ -93,7 +92,7 @@ prefix '/met' => sub {
 			content_type 'application/json';
 			return encode_json($data);
 		};
-		post '/add' => sub { #TODO
+		post '/add' => sub { #TODO quick_insert
 			my $sth    = database->prepare("INSERT INTO taxa (ordo, familia, genus, species) VALUES ordo = '?' AND familia ='?' AND genus = '?' AND species = '?'") or error "failed to prepare ".database->errstr;
 			my $order   = query_parameters->get('ordo');
 			my $family  = query_parameters->get('familia');
@@ -101,16 +100,16 @@ prefix '/met' => sub {
 			my $species = query_parameters->get('species');
 			$sth->execute($order, $family, $genus, $species) or error "failed to execute stmt ".database->errstr;
 		};
-		# TODO taxa seq assign
-		# TODO taxa 
-		get '/delete' => sub {
+		# TODO taxa seq assign  INSERT INTO taxa_seq_id (taxon_id, sequence, source, external_identifier) VALUES
+		# TODO taxa  
+		get '/delete' => sub { #TODO quick_delete
 			my @ids = query_parameters->get_all('id');
 		};
 	};
 
 	prefix '/dataset' => sub {
-		get '/asv' => sub{ #TODO get dataset asvs and counts
-			my $sth  = database->prepare("SELECT * FROM place WHERE asv = '?'") or error "failed to prepare ".database->errstr;
+		get '/asv' => sub{ #TODO This is function dataset_asv
+			my $sth  = database->prepare("SELECT * FROM place WHERE asv = '?'") or error "failed to prepare ".database->errstr #wrong;
 			my @otus = query_parameters->get_all('asv');
 			$sth->execute($otus[0]) or error "failed to execute stmt ".database->errstr;
 			my @row;
@@ -125,7 +124,7 @@ prefix '/met' => sub {
 			content_type 'application/json';
 			return encode_json($data);
 		};
-		get '/name' => sub{ #TODO get dataset taxons and counts
+		get '/name' => sub{ #TODO this is dataset_asv_name
 			my $order = query_parameters->get('order');
 			my $family = query_parameters->get('family');
 			my $genus = query_parameters->get('genus');
