@@ -282,10 +282,10 @@ L<http://search.cpan.org/dist/Met-API/>
 Copyright 2019 David Molik.
 
 This program is free software; you can redistribute it and/or modify it
-under the terms of the the Artistic License (2.0). You may obtain a
+under the terms of the the GNU Affero General Public License. You may obtain a
 copy of the full license at:
 
-L<http://www.perlfoundation.org/artistic_license_2_0>
+L<https://www.gnu.org/licenses/agpl-3.0.en.html>
 
 Any use, modification, and distribution of the Standard or Modified
 Versions is governed by this Artistic License. By using, modifying or
