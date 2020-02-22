@@ -60,7 +60,21 @@ get '/' => sub { # {{{
 prefix '/met' => sub {
 	# TODO - all deletes need to be privledged access via admin management
 	prefix '/taxa' => sub {
-		get '/asv' => sub {#TODO, SELECT * FROM asv,taxon_assignment,taxa WHERE asv.sequence = ? AND asv.id = taxon_assignment.id AND taxon_assignment.taxon_id = taxa.id;
+		get '/asv' => sub {
+			my $sth  = database->prepare("SELECT * FROM asv,taxon_assignment,taxa WHERE asv.sequence = ? AND asv.id = taxon_assignment.id AND taxon_assignment.taxon_id = taxa.id;") or error "failed to prepare ".database->errstr #wrong;
+			my $asv = query_parameters->get('asv');
+			$sth->execute($asv) or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
 		};
 		get '/name' => sub {
 			my @arr;
@@ -92,26 +106,39 @@ prefix '/met' => sub {
 			content_type 'application/json';
 			return encode_json($data);
 		};
-		post '/add' => sub { #TODO quick_insert
-			my $sth    = database->prepare("INSERT INTO taxa (ordo, familia, genus, species) VALUES ordo = '?' AND familia ='?' AND genus = '?' AND species = '?'") or error "failed to prepare ".database->errstr;
+		post '/add' => sub {
 			my $order   = query_parameters->get('ordo');
 			my $family  = query_parameters->get('familia');
 			my $genus   = query_parameters->get('genus');
 			my $species = query_parameters->get('species');
-			$sth->execute($order, $family, $genus, $species) or error "failed to execute stmt ".database->errstr;
+			my $sth = database->quick_insert('taxa', { ordo => $order, familia => $family, genus => $genus, species => $species});
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
+		post '/seq_assign' => sub {
+			my $taxon_id = query_parameters->get('taxon_id');
+			my $sequence = query_parameters->get('sequence');
+			my $source = query_parameters->get('source');
+			my $external_identifier = query_parameters->get('external_identifier');
+			my $sth = database->quick_insert('taxa_seq_id',{taxon_id => $taxon_id, sequence => $sequence, source => $source, external_identifier => $external_identifier});
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
+		}
 		# TODO taxa seq assign  INSERT INTO taxa_seq_id (taxon_id, sequence, source, external_identifier) VALUES
-		# TODO taxa  
-		get '/delete' => sub { #TODO quick_delete
-			my @ids = query_parameters->get_all('id');
+		get '/delete' => sub {
+			my $id = query_parameters->get('id');
+			my $sth = database->quick_delete('taxa',{id => $id });
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 	};
 
 	prefix '/dataset' => sub {
 		get '/asv' => sub{ #TODO This is function dataset_asv
-			my $sth  = database->prepare("SELECT * FROM place WHERE asv = '?'") or error "failed to prepare ".database->errstr #wrong;
-			my @otus = query_parameters->get_all('asv');
-			$sth->execute($otus[0]) or error "failed to execute stmt ".database->errstr;
+			my $asv_id = query_parameters->get('asv_id');
+			my $str - "SELECT dataset_asv('$asv_id');"
+			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
+			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
 			my $i = 0;
@@ -125,35 +152,171 @@ prefix '/met' => sub {
 			return encode_json($data);
 		};
 		get '/name' => sub{ #TODO this is dataset_asv_name
-			my $order = query_parameters->get('order');
-			my $family = query_parameters->get('family');
-			my $genus = query_parameters->get('genus');
-			my $species = query_parameters->get('species');
+			my $external_identifier = query_parameters->get('external_identifier');
+			my $str - "SELECT dataset_asv_name('$external_identifier');"
+			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
+			$sth->execute() or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
 		};
-		#TODO get dataset metadata
-		post '/add' => sub{};
-		post '/delete' => sub{};
+		get 'dataset_table' => sub{
+			my $dataset_id = query_parameters->get('dataset_id');
+			my $str - "SELECT dataset_asv('$dataset_id');"
+			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
+			$sth->execute() or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
+		};
+		get 'dataset_taxa_table' => sub{
+			my $dataset_id = query_parameters->get('dataset_id');
+			my $str - "SELECT dataset_asv_name('$dataset_id');"
+			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
+			$sth->execute() or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
+		};
+		post '/add' => sub{
+			my $external_identifier = query_parameters->get('external_identifier');
+			my $external_name = query_parameters->get('external_name');
+			my $external_url = query_parameters->get('external_url');
+			my $sth = database->quick_insert('datasets',{external_identifier => $external_identifier, external_name => $external_name, external_url => $external_url});
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
+		};
+		post '/delete' => sub{
+			my $dataset_id = query_parameters->get('dataset_id');
+			my $sth = database->quick_delete('datasets',{dataset_id => $dataset_id});
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
+		};
 	};
 
 # TODO this will return taxa functional profile data, waiting for Stephanies updates.
 #	prefix '/functional_profile' => sub {
 #	};
-
 	#TODO dataset metadata
 	#TODO project add/assignment
+	#TODO description
 
 	prefix '/asv' => sub {
-		# TODO dataset assign
-		# TODO taxon assign
-		# TODO get an asv
-		post 'add'   => sub { }; #TODO, adds asv
-
+		get '/select' => {
+			my $asv_id = query_parameters->get('asv_id');
+			my $sth = database->quick_select('asv',{asv_id => $asv_id});
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
+		};
+		get '/datasets' => {
+			my $seq = query_parameters->get('seq');
+			my $str - "SELECT asv_dataset('$seq');"
+			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
+			$sth->execute() or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
+		};
+		post '/assign_dataset' => { #TODO bulk assign dataset, bulk insert asv
+			my $asv_id = query_parameters->get('asv_id');
+			my $dataset_id = query_parameters->get('dataset_id');
+			my $amount_found = query_parameters->get('amount_found');
+			my $sth = database->quick_select('asv_assignment',{asv_id => $asv_id, dataset_id => $dataset_id, amount_found => $amount_found});
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
+		};
+		post '/assign_taxa' => {
+			my $asv_id = query_parameters->get('asv_id');
+			my $taxon_id = query_parameters->get('taxon_id');
+			my $assignment_score = query_parameters->get('assignment_score');
+			my $assignment_tool = query_parameters->get('assignment_tool');
+			my $sth = database->quick_select('taxon_assignment',{asv_id => $asv_id, taxon_id => $taxon_id, assignment_score => $assignment_score, assignment_tool => $assignment_tool});
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
+		};
+		post '/add'   => sub {
+			my $sequence = query_parameters->get('sequence');
+			my $quality_score  = query_parameters->get('quality_score');
+			my $gene_region = query_parameters->get('gene_region');
+			my $sth = database->quick_insert('asv',{sequence => $sequence, quality_score => $quality_score, gene_region => $gene_region});
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
+		};
+		post '/delete' => sub{
+			my $asv_id = query_parameters->get('asv_id');
+			my $sth = database->quick_delete('asv',{asv_id => $asv_id});
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 	};
 
 	prefix '/search' => sub {
-		get '/asv' => sub {}; #TODO search won't actually do a full search, were just going to grab the best guesses and send them over to the analysis package
-		#TODO get datasets with asv search
+		get '/asv_datasets' => sub {
+			my $asv = query_parameters->get('seq');
+			my $str - "SELECT candidate_asv_search('$asv');"
+			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
+			$sth->execute() or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
+		};
+		get '/asv_taxa' = sub {
+			my $asv = query_parameters->get('seq');
+			my $str - "SELECT candidate_taxon_assignment('$asv');"
+			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
+			$sth->execute() or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
+		};
 	};
 
 
@@ -281,42 +444,9 @@ L<http://search.cpan.org/dist/Met-API/>
 
 Copyright 2019 David Molik.
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of the the GNU Affero General Public License. You may obtain a
-copy of the full license at:
-
-L<https://www.gnu.org/licenses/agpl-3.0.en.html>
-
-Any use, modification, and distribution of the Standard or Modified
-Versions is governed by this Artistic License. By using, modifying or
-distributing the Package, you accept this license. Do not use, modify,
-or distribute the Package, if you do not accept this license.
-
-If your Modified Version has been derived from a Modified Version made
-by someone other than you, you are nevertheless required to ensure that
-your Modified Version complies with the requirements of this license.
-
-This license does not grant you the right to use any trademark, service
-mark, tradename, or logo of the Copyright Holder.
-
-This license includes the non-exclusive, worldwide, free-of-charge
-patent license to make, have made, use, offer to sell, sell, import and
-otherwise transfer the Package with respect to any patent claims
-licensable by the Copyright Holder that are necessarily infringed by the
-Package. If you institute patent litigation (including a cross-claim or
-counterclaim) against any party alleging that the Package constitutes
-direct or contributory patent infringement, then this Artistic License
-to you shall terminate on the date that such litigation is filed.
-
-Disclaimer of Warranty: THE PACKAGE IS PROVIDED BY THE COPYRIGHT HOLDER
-AND CONTRIBUTORS "AS IS' AND WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES.
-THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE, OR NON-INFRINGEMENT ARE DISCLAIMED TO THE EXTENT PERMITTED BY
-YOUR LOCAL LAW. UNLESS REQUIRED BY LAW, NO COPYRIGHT HOLDER OR
-CONTRIBUTOR WILL BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, OR
-CONSEQUENTIAL DAMAGES ARISING IN ANY WAY OUT OF THE USE OF THE PACKAGE,
-EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. If a copy of the MPL was not distributed with this
+file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 =cut
 
