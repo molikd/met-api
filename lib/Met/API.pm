@@ -61,7 +61,7 @@ prefix '/met' => sub {
 	# TODO - all deletes need to be privledged access via admin management
 	prefix '/taxa' => sub {
 		get '/asv' => sub {
-			my $sth  = database->prepare("SELECT * FROM asv,taxon_assignment,taxa WHERE asv.sequence = ? AND asv.id = taxon_assignment.id AND taxon_assignment.taxon_id = taxa.id;") or error "failed to prepare ".database->errstr #wrong;
+			my $sth  = database->prepare("SELECT * FROM asv,taxon_assignment,taxa WHERE asv.sequence = ? AND asv.id = taxon_assignment.id AND taxon_assignment.taxon_id = taxa.id;") or error "failed to prepare ".database->errstr;
 			my $asv = param "asv";
 			$sth->execute($asv) or error "failed to execute stmt ".database->errstr;
 			my @row;
@@ -123,7 +123,7 @@ prefix '/met' => sub {
 			my $sth = database->quick_insert('taxa_seq_id',{taxon_id => $taxon_id, sequence => $sequence, source => $source, external_identifier => $external_identifier});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
-		}
+		};
 		# TODO taxa seq assign  INSERT INTO taxa_seq_id (taxon_id, sequence, source, external_identifier) VALUES
 		get '/delete' => sub {
 			my $id = param "id";
@@ -136,8 +136,8 @@ prefix '/met' => sub {
 	prefix '/dataset' => sub {
 		get '/asv' => sub{ #TODO This is function dataset_asv
 			my $asv_id = param "asv_id";
-			my $str - "SELECT dataset_asv('$asv_id');"
-			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
+			my $str = "SELECT dataset_asv('$asv_id');";
+			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -153,8 +153,8 @@ prefix '/met' => sub {
 		};
 		get '/name' => sub{ #TODO this is dataset_asv_name
 			my $external_identifier = param "external_identifier";
-			my $str - "SELECT dataset_asv_name('$external_identifier');"
-			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
+			my $str = "SELECT dataset_asv_name('$external_identifier');";
+			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -170,8 +170,8 @@ prefix '/met' => sub {
 		};
 		get 'dataset_table' => sub{
 			my $dataset_id = param "dataset_id";
-			my $str - "SELECT dataset_asv('$dataset_id');"
-			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
+			my $str = "SELECT dataset_asv('$dataset_id');";
+			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -187,8 +187,8 @@ prefix '/met' => sub {
 		};
 		get 'dataset_taxa_table' => sub{
 			my $dataset_id = param "dataset_id";
-			my $str - "SELECT dataset_asv_name('$dataset_id');"
-			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
+			my $str = "SELECT dataset_asv_name('$dataset_id');";
+			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -218,24 +218,24 @@ prefix '/met' => sub {
 		};
 	};
 
-# TODO this will return taxa functional profile data, waiting for Stephanies updates.
-#	prefix '/functional_profile' => sub {
-#	};
+	# TODO this will return taxa functional profile data, waiting for Stephanies updates.
+	# prefix '/functional_profile' => sub {
+	# };
 	#TODO dataset metadata
 	#TODO project add/assignment
 	#TODO description
 
-	prefix '/asv' => sub {
-		get '/select' => {
+	prefix '/asv' => sub{
+		get '/select' => sub{
 			my $asv_id = param "asv_id";
 			my $sth = database->quick_select('asv',{asv_id => $asv_id});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
-		get '/datasets' => {
+		get '/datasets' => sub{
 			my $seq = param "seq";
-			my $str - "SELECT asv_dataset('$seq');"
-			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
+			my $str = "SELECT asv_dataset('$seq');";
+			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -249,7 +249,7 @@ prefix '/met' => sub {
 			content_type 'application/json';
 			return encode_json($data);
 		};
-		post '/assign_dataset' => { #TODO bulk assign dataset, bulk insert asv
+		post '/assign_dataset' => sub{ #TODO bulk assign dataset, bulk insert asv
 			my $asv_id = param "asv_id";
 			my $dataset_id = param "dataset_id";
 			my $amount_found = param "amount_found";
@@ -257,7 +257,7 @@ prefix '/met' => sub {
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
-		post '/assign_taxa' => {
+		post '/assign_taxa' => sub{
 			my $asv_id = param "asv_id";
 			my $taxon_id = param "taxon_id";
 			my $assignment_score = param "assignment_score";
@@ -285,8 +285,8 @@ prefix '/met' => sub {
 	prefix '/search' => sub {
 		get '/asv_datasets' => sub {
 			my $asv = param "seq";
-			my $str - "SELECT candidate_asv_search('$asv');"
-			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
+			my $str = "SELECT candidate_asv_search('$asv');";
+			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -300,10 +300,10 @@ prefix '/met' => sub {
 			content_type 'application/json';
 			return encode_json($data);
 		};
-		get '/asv_taxa' = sub {
+		get '/asv_taxa' => sub {
 			my $asv = param "seq";
-			my $str - "SELECT candidate_taxon_assignment('$asv');"
-			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
+			my $str = "SELECT candidate_taxon_assignment('$asv');";
+			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -318,8 +318,6 @@ prefix '/met' => sub {
 			return encode_json($data);
 		};
 	};
-
-
 };
 
 sub _configure # {{{
