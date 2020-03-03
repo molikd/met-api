@@ -29,9 +29,9 @@ our $CONFIG = {
 	uid          => 'met',
 	pidfile      => '/run/met-api.pid',
 	log_file     => '/var/log/met-api.log',
-	db           => {
+	db          => {
 		driver => 'Pg',
-		host   => 'local',
+		host   => '127.0.0.1',
 		port   =>  5432,
 		user   => 'dmolik',
 		dbname => 'met_test',
@@ -61,7 +61,7 @@ prefix '/met' => sub {
 	# TODO - all deletes need to be privledged access via admin management
 	prefix '/taxa' => sub {
 		get '/asv' => sub {
-			my $sth  = database->prepare("SELECT * FROM asv,taxon_assignment,taxa WHERE asv.sequence = ? AND asv.id = taxon_assignment.id AND taxon_assignment.taxon_id = taxa.id;") or error "failed to prepare ".database->errstr;
+			my $sth  = database($CONFIG->{db})->prepare("SELECT * FROM asv,taxon_assignment,taxa WHERE asv.sequence = ? AND asv.id = taxon_assignment.id AND taxon_assignment.taxon_id = taxa.id;") or error "failed to prepare ".database->errstr;
 			my $asv = param "asv";
 			$sth->execute($asv) or error "failed to execute stmt ".database->errstr;
 			my @row;
@@ -87,7 +87,7 @@ prefix '/met' => sub {
 			for my $lvl (@arr) {
 				$str .= " $lvl->[0] = '?'";
 			}
-			my $sth = database->prepare($str) or error "failed to prepare ".database->errstr;
+			my $sth = database($CONFIG->{db})->prepare($str) or error "failed to prepare ".database->errstr;
 			switch(scalar @arr) {
 				case 4 { $sth->execute($arr[0][1], $arr[1][1], $arr[2][1], $arr[3][1]) or error "failed to execute stmt ".database->errstr; }
 				case 3 { $sth->execute($arr[0][1], $arr[1][1], $arr[2][1]) or error "failed to execute stmt ".database->errstr; }
@@ -111,7 +111,7 @@ prefix '/met' => sub {
 			my $family  = param "familia";
 			my $genus   = param "genus";
 			my $species = param "species";
-			my $sth = database->quick_insert('taxa', { ordo => $order, familia => $family, genus => $genus, species => $species});
+			my $sth = database($CONFIG->{db})->quick_insert('taxa', { ordo => $order, familia => $family, genus => $genus, species => $species});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
@@ -120,14 +120,14 @@ prefix '/met' => sub {
 			my $sequence = param "sequence";
 			my $source = param "source";
 			my $external_identifier = param "external_identifier";
-			my $sth = database->quick_insert('taxa_seq_id',{taxon_id => $taxon_id, sequence => $sequence, source => $source, external_identifier => $external_identifier});
+			my $sth = database($CONFIG->{db})->quick_insert('taxa_seq_id',{taxon_id => $taxon_id, sequence => $sequence, source => $source, external_identifier => $external_identifier});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 		# TODO taxa seq assign  INSERT INTO taxa_seq_id (taxon_id, sequence, source, external_identifier) VALUES
 		get '/delete' => sub {
 			my $id = param "id";
-			my $sth = database->quick_delete('taxa',{id => $id });
+			my $sth = database($CONFIG->{db})->quick_delete('taxa',{id => $id });
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
@@ -137,7 +137,7 @@ prefix '/met' => sub {
 		get '/asv' => sub{ #TODO This is function dataset_asv
 			my $asv_id = param "asv_id";
 			my $str = "SELECT dataset_asv('$asv_id');";
-			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr;
+			my $sth  = database($CONFIG->{db})->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -154,7 +154,7 @@ prefix '/met' => sub {
 		get '/name' => sub{ #TODO this is dataset_asv_name
 			my $external_identifier = param "external_identifier";
 			my $str = "SELECT dataset_asv_name('$external_identifier');";
-			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr;
+			my $sth  = database($CONFIG->{db})->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -171,7 +171,7 @@ prefix '/met' => sub {
 		get 'dataset_table' => sub{
 			my $dataset_id = param "dataset_id";
 			my $str = "SELECT dataset_asv('$dataset_id');";
-			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr;
+			my $sth  = database($CONFIG->{db})->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -188,7 +188,7 @@ prefix '/met' => sub {
 		get 'dataset_taxa_table' => sub{
 			my $dataset_id = param "dataset_id";
 			my $str = "SELECT dataset_asv_name('$dataset_id');";
-			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr;
+			my $sth  = database($CONFIG->{db})->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -206,13 +206,13 @@ prefix '/met' => sub {
 			my $external_identifier = param "external_identifier";
 			my $external_name = param "external_name";
 			my $external_url = param "external_url";
-			my $sth = database->quick_insert('datasets',{external_identifier => $external_identifier, external_name => $external_name, external_url => $external_url});
+			my $sth = database($CONFIG->{db})->quick_insert('datasets',{external_identifier => $external_identifier, external_name => $external_name, external_url => $external_url});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 		post '/delete' => sub{
 			my $dataset_id = param "dataset_id";
-			my $sth = database->quick_delete('datasets',{dataset_id => $dataset_id});
+			my $sth = database($CONFIG->{db})->quick_delete('datasets',{dataset_id => $dataset_id});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
@@ -228,14 +228,14 @@ prefix '/met' => sub {
 	prefix '/asv' => sub{
 		get '/select' => sub{
 			my $asv_id = param "asv_id";
-			my $sth = database->quick_select('asv',{asv_id => $asv_id});
+			my $sth = database($CONFIG->{db})->quick_select('asv',{asv_id => $asv_id});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 		get '/datasets' => sub{
 			my $seq = param "seq";
 			my $str = "SELECT asv_dataset('$seq');";
-			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr;
+			my $sth  = database($CONFIG->{db})->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -253,7 +253,7 @@ prefix '/met' => sub {
 			my $asv_id = param "asv_id";
 			my $dataset_id = param "dataset_id";
 			my $amount_found = param "amount_found";
-			my $sth = database->quick_select('asv_assignment',{asv_id => $asv_id, dataset_id => $dataset_id, amount_found => $amount_found});
+			my $sth = database($CONFIG->{db})->quick_select('asv_assignment',{asv_id => $asv_id, dataset_id => $dataset_id, amount_found => $amount_found});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
@@ -262,7 +262,7 @@ prefix '/met' => sub {
 			my $taxon_id = param "taxon_id";
 			my $assignment_score = param "assignment_score";
 			my $assignment_tool = param "assignment_tool";
-			my $sth = database->quick_select('taxon_assignment',{asv_id => $asv_id, taxon_id => $taxon_id, assignment_score => $assignment_score, assignment_tool => $assignment_tool});
+			my $sth = database($CONFIG->{db})->quick_select('taxon_assignment',{asv_id => $asv_id, taxon_id => $taxon_id, assignment_score => $assignment_score, assignment_tool => $assignment_tool});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
@@ -270,13 +270,13 @@ prefix '/met' => sub {
 			my $sequence = param "sequence";
 			my $quality_score  = param "quality_score";
 			my $gene_region = param "gene_region";
-			my $sth = database->quick_insert('asv',{sequence => $sequence, quality_score => $quality_score, gene_region => $gene_region});
+			my $sth = database($CONFIG->{db})->quick_insert('asv',{sequence => $sequence, quality_score => $quality_score, gene_region => $gene_region});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 		post '/delete' => sub{
 			my $asv_id = param "asv_id";
-			my $sth = database->quick_delete('asv',{asv_id => $asv_id});
+			my $sth = database($CONFIG->{db})->quick_delete('asv',{asv_id => $asv_id});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
@@ -286,7 +286,7 @@ prefix '/met' => sub {
 		get '/asv_datasets' => sub {
 			my $asv = param "seq";
 			my $str = "SELECT candidate_asv_search('$asv');";
-			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr;
+			my $sth  = database($CONFIG->{db})->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -303,7 +303,7 @@ prefix '/met' => sub {
 		get '/asv_taxa' => sub {
 			my $asv = param "seq";
 			my $str = "SELECT candidate_taxon_assignment('$asv');";
-			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr;
+			my $sth  = database($CONFIG->{db})->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -360,7 +360,7 @@ sub _configure # {{{
 	# set serializer   => 'JSON';
 	# set content_type => 'application/json';
 }
-# }}}
+# }}} 
 
 _configure();
 info "spawning $name";
