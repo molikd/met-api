@@ -62,7 +62,7 @@ prefix '/met' => sub {
 	prefix '/taxa' => sub {
 		get '/asv' => sub {
 			my $sth  = database->prepare("SELECT * FROM asv,taxon_assignment,taxa WHERE asv.sequence = ? AND asv.id = taxon_assignment.id AND taxon_assignment.taxon_id = taxa.id;") or error "failed to prepare ".database->errstr #wrong;
-			my $asv = query_parameters->get('asv');
+			my $asv = param "asv";
 			$sth->execute($asv) or error "failed to execute stmt ".database->errstr;
 			my @row;
 			my $data = ();
@@ -107,26 +107,26 @@ prefix '/met' => sub {
 			return encode_json($data);
 		};
 		post '/add' => sub {
-			my $order   = query_parameters->get('ordo');
-			my $family  = query_parameters->get('familia');
-			my $genus   = query_parameters->get('genus');
-			my $species = query_parameters->get('species');
+			my $order   = param "ordo";
+			my $family  = param "familia";
+			my $genus   = param "genus";
+			my $species = param "species";
 			my $sth = database->quick_insert('taxa', { ordo => $order, familia => $family, genus => $genus, species => $species});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 		post '/seq_assign' => sub {
-			my $taxon_id = query_parameters->get('taxon_id');
-			my $sequence = query_parameters->get('sequence');
-			my $source = query_parameters->get('source');
-			my $external_identifier = query_parameters->get('external_identifier');
+			my $taxon_id = param "taxon_id";
+			my $sequence = param "sequence";
+			my $source = param "source";
+			my $external_identifier = param "external_identifier";
 			my $sth = database->quick_insert('taxa_seq_id',{taxon_id => $taxon_id, sequence => $sequence, source => $source, external_identifier => $external_identifier});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		}
 		# TODO taxa seq assign  INSERT INTO taxa_seq_id (taxon_id, sequence, source, external_identifier) VALUES
 		get '/delete' => sub {
-			my $id = query_parameters->get('id');
+			my $id = param "id";
 			my $sth = database->quick_delete('taxa',{id => $id });
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
@@ -135,7 +135,7 @@ prefix '/met' => sub {
 
 	prefix '/dataset' => sub {
 		get '/asv' => sub{ #TODO This is function dataset_asv
-			my $asv_id = query_parameters->get('asv_id');
+			my $asv_id = param "asv_id";
 			my $str - "SELECT dataset_asv('$asv_id');"
 			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
@@ -152,7 +152,7 @@ prefix '/met' => sub {
 			return encode_json($data);
 		};
 		get '/name' => sub{ #TODO this is dataset_asv_name
-			my $external_identifier = query_parameters->get('external_identifier');
+			my $external_identifier = param "external_identifier";
 			my $str - "SELECT dataset_asv_name('$external_identifier');"
 			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
@@ -169,7 +169,7 @@ prefix '/met' => sub {
 			return encode_json($data);
 		};
 		get 'dataset_table' => sub{
-			my $dataset_id = query_parameters->get('dataset_id');
+			my $dataset_id = param "dataset_id";
 			my $str - "SELECT dataset_asv('$dataset_id');"
 			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
@@ -186,7 +186,7 @@ prefix '/met' => sub {
 			return encode_json($data);
 		};
 		get 'dataset_taxa_table' => sub{
-			my $dataset_id = query_parameters->get('dataset_id');
+			my $dataset_id = param "dataset_id";
 			my $str - "SELECT dataset_asv_name('$dataset_id');"
 			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
@@ -203,15 +203,15 @@ prefix '/met' => sub {
 			return encode_json($data);
 		};
 		post '/add' => sub{
-			my $external_identifier = query_parameters->get('external_identifier');
-			my $external_name = query_parameters->get('external_name');
-			my $external_url = query_parameters->get('external_url');
+			my $external_identifier = param "external_identifier";
+			my $external_name = param "external_name";
+			my $external_url = param "external_url";
 			my $sth = database->quick_insert('datasets',{external_identifier => $external_identifier, external_name => $external_name, external_url => $external_url});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 		post '/delete' => sub{
-			my $dataset_id = query_parameters->get('dataset_id');
+			my $dataset_id = param "dataset_id";
 			my $sth = database->quick_delete('datasets',{dataset_id => $dataset_id});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
@@ -227,13 +227,13 @@ prefix '/met' => sub {
 
 	prefix '/asv' => sub {
 		get '/select' => {
-			my $asv_id = query_parameters->get('asv_id');
+			my $asv_id = param "asv_id";
 			my $sth = database->quick_select('asv',{asv_id => $asv_id});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 		get '/datasets' => {
-			my $seq = query_parameters->get('seq');
+			my $seq = param "seq";
 			my $str - "SELECT asv_dataset('$seq');"
 			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
@@ -250,32 +250,32 @@ prefix '/met' => sub {
 			return encode_json($data);
 		};
 		post '/assign_dataset' => { #TODO bulk assign dataset, bulk insert asv
-			my $asv_id = query_parameters->get('asv_id');
-			my $dataset_id = query_parameters->get('dataset_id');
-			my $amount_found = query_parameters->get('amount_found');
+			my $asv_id = param "asv_id";
+			my $dataset_id = param "dataset_id";
+			my $amount_found = param "amount_found";
 			my $sth = database->quick_select('asv_assignment',{asv_id => $asv_id, dataset_id => $dataset_id, amount_found => $amount_found});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 		post '/assign_taxa' => {
-			my $asv_id = query_parameters->get('asv_id');
-			my $taxon_id = query_parameters->get('taxon_id');
-			my $assignment_score = query_parameters->get('assignment_score');
-			my $assignment_tool = query_parameters->get('assignment_tool');
+			my $asv_id = param "asv_id";
+			my $taxon_id = param "taxon_id";
+			my $assignment_score = param "assignment_score";
+			my $assignment_tool = param "assignment_tool";
 			my $sth = database->quick_select('taxon_assignment',{asv_id => $asv_id, taxon_id => $taxon_id, assignment_score => $assignment_score, assignment_tool => $assignment_tool});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 		post '/add'   => sub {
-			my $sequence = query_parameters->get('sequence');
-			my $quality_score  = query_parameters->get('quality_score');
-			my $gene_region = query_parameters->get('gene_region');
+			my $sequence = param "sequence";
+			my $quality_score  = param "quality_score";
+			my $gene_region = param "gene_region";
 			my $sth = database->quick_insert('asv',{sequence => $sequence, quality_score => $quality_score, gene_region => $gene_region});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 		post '/delete' => sub{
-			my $asv_id = query_parameters->get('asv_id');
+			my $asv_id = param "asv_id";
 			my $sth = database->quick_delete('asv',{asv_id => $asv_id});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
@@ -284,7 +284,7 @@ prefix '/met' => sub {
 
 	prefix '/search' => sub {
 		get '/asv_datasets' => sub {
-			my $asv = query_parameters->get('seq');
+			my $asv = param "seq";
 			my $str - "SELECT candidate_asv_search('$asv');"
 			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
@@ -301,7 +301,7 @@ prefix '/met' => sub {
 			return encode_json($data);
 		};
 		get '/asv_taxa' = sub {
-			my $asv = query_parameters->get('seq');
+			my $asv = param "seq";
 			my $str - "SELECT candidate_taxon_assignment('$asv');"
 			my $sth  = database->prepare($str) or error "failed to prepare ".database->errstr #wrong;
 			$sth->execute() or error "failed to execute stmt ".database->errstr;
