@@ -41,7 +41,7 @@ prefix '/met' => sub {
 	# TODO - all deletes need to be privledged access via admin management
 	prefix '/taxa' => sub {
 		get '/asv' => sub {
-			my $sth  = ("SELECT * FROM asv,taxon_assignment,taxa WHERE asv.sequence = ? AND asv.id = taxon_assignment.id AND taxon_assignment.taxon_id = taxa.id;") or error "failed to prepare ".database->errstr;
+			my $sth  = ("SELECT * FROM asv,taxon_assignment,taxa WHERE asv.sequence = ? AND asv.asv_id = taxon_assignment.asv_id AND taxon_assignment.taxon_id = taxa.taxon_id;") or error "failed to prepare ".database->errstr;
 			my $asv = param "asv";
 			$sth->execute($asv) or error "failed to execute stmt ".database->errstr;
 			my @row;
