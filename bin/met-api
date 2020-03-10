@@ -1,11 +1,8 @@
-#!/usr/bin/perl
-
-use strict;
-use warnings;
-
+#!/usr/bin/env perl
+use Dancer;
+#use strict;
+#use warnings;
 #use lib "/Users/dmolik/OneDrive - nd.edu/Code/met/met-api";
 print "\@INC is @INC\n";
-
-
 use Met::API;
-Met::API->run();
+dance;
