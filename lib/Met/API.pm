@@ -110,13 +110,13 @@ prefix '/met' => sub {
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
-		post '/seq_delete' => sub {
+        post '/seq_delete' => sub {
             my $seq_id = param "seq_id";
             my $sth = database()->quick_delete('taxa_seq_id',{seq_id => $seq_id });
             content_type 'application/json';
             return encode_json($sth); #TODO - CHECK SYNTAX
         };
-	};
+    };
 
 	prefix '/dataset' => sub {
 		get '/asv' => sub{ #TODO This is function dataset_asv
@@ -232,7 +232,7 @@ prefix '/met' => sub {
         };
     };
 
-	prefix '/description' => sub{
+    prefix '/description' => sub{
         get '/select' => sub{
             my $description_id = param "description_id";
             my $sth = database()->quick_select('descriptions', {description_id => $description_id});
