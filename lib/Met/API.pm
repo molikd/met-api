@@ -41,7 +41,7 @@ prefix '/met' => sub {
 	# TODO - all deletes need to be privledged access via admin management
 	prefix '/taxa' => sub {
 		get '/asv' => sub {
-			my $sth  = ("SELECT * FROM asv,taxon_assignment,taxa WHERE asv.sequence = ? AND asv.asv_id = taxon_assignment.asv_id AND taxon_assignment.taxon_id = taxa.taxon_id;") or error "failed to prepare ".database->errstr;
+			my $sth  == ("SELECT * FROM asv,taxon_assignment,taxa WHERE asv.sequence = ? AND asv.asv_id = taxon_assignment.asv_id AND taxon_assignment.taxon_id = taxa.taxon_id;") or error "failed to prepare ".database->errstr;
 			my $asv = param "asv";
 			$sth->execute($asv) or error "failed to execute stmt ".database->errstr;
 			my @row;
@@ -104,14 +104,19 @@ prefix '/met' => sub {
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
-		# TODO taxa seq assign  INSERT INTO taxa_seq_id (taxon_id, sequence, source, external_identifier) VALUES
-		get '/delete' => sub {
-			my $id = param "id";
-			my $sth = database()->quick_delete('taxa',{id => $id });
+		post '/delete' => sub {
+			my $taxon_id = param "taxon_id";
+			my $sth = database()->quick_delete('taxa',{taxon_id => $taxon_id });
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
-	};
+        post '/seq_delete' => sub {
+            my $seq_id = param "seq_id";
+            my $sth = database()->quick_delete('taxa_seq_id',{seq_id => $seq_id });
+            content_type 'application/json';
+            return encode_json($sth); #TODO - CHECK SYNTAX
+        };
+    };
 
 	prefix '/dataset' => sub {
 		get '/asv' => sub{ #TODO This is function dataset_asv
@@ -202,8 +207,53 @@ prefix '/met' => sub {
 	# prefix '/functional_profile' => sub {
 	# };
 	#TODO dataset metadata
-	#TODO project add/assignment
-	#TODO description
+	
+	prefix '/projects' => sub{
+        get '/select' => sub{
+            my $association_id = param "association_id";
+            my $sth = database()->quick_select('projects', {association_id => $association_id});
+            content type 'application/json';
+            return encode_json($sth);
+        };
+        post '/add' => sub{
+            my $project_name = param "project_name";
+            my $external_identifier = param "external_identifier";
+            my $external_name = param "external_name";
+            my $dataset_ids = param "dataset_ids";
+            my $sth = database()->quick_insert('projects', {project_name => $project_name, external_identifier => $external_identifier, external_name => $external_name, dataset_ids => $dataset_ids});
+            content_type 'application/json';
+            return encode_json($sth);
+        };
+        post '/delete' => sub{
+            my $association_id = param "association_id";
+            my $sth = database()->quick_delete('projects', {association_id => $association_id});
+            content_type 'application/json';
+            return encode_json($sth);
+        };
+    };
+
+    prefix '/description' => sub{
+        get '/select' => sub{
+            my $description_id = param "description_id";
+            my $sth = database()->quick_select('descriptions', {description_id => $description_id});
+            content_type 'application/json';
+            return encode_json($sth);
+        };
+        post '/add' => sub{
+            my $taxon_id = param "taxon_id";
+            my $description = param "description";
+            my $name = param "name";
+            my $sth = database()->quick_insert('descriptions', {taxon_id => $taxon_id, description => $description, name => $name});
+            content_type 'application/json';
+            return encode_json($sth);
+        };
+        post '/delete' => sub{
+            my $description_id = param "description_id";
+            my $sth = database()->quick_delete('descriptions', {description_id => $description_id});
+            content_type 'application/json';
+            return encode_json($sth);
+        };
+    };
 
 	prefix '/asv' => sub{
 		get '/select' => sub{
@@ -233,16 +283,22 @@ prefix '/met' => sub {
 			my $asv_id = param "asv_id";
 			my $dataset_id = param "dataset_id";
 			my $amount_found = param "amount_found";
-			my $sth = database()->quick_select('asv_assignment',{asv_id => $asv_id, dataset_id => $dataset_id, amount_found => $amount_found});
+			my $sth = database()->quick_insert('asv_assignment',{asv_id => $asv_id, dataset_id => $dataset_id, amount_found => $amount_found});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
+		post '/delete_dataset' => sub{
+            my $asv_assignment_id = param "asv_assignment_id";
+            my $sth = database()->quick_delete('asv_assignment',{asv_assignment_id => $asv_assignment_id});
+            content_type 'application/json';
+            return encode_json($sth); #TODO - CHECK SYNTAX
+        };
 		post '/assign_taxa' => sub{
 			my $asv_id = param "asv_id";
 			my $taxon_id = param "taxon_id";
 			my $assignment_score = param "assignment_score";
 			my $assignment_tool = param "assignment_tool";
-			my $sth = database()->quick_select('taxon_assignment',{asv_id => $asv_id, taxon_id => $taxon_id, assignment_score => $assignment_score, assignment_tool => $assignment_tool});
+			my $sth = database()->quick_insert('taxon_assignment',{asv_id => $asv_id, taxon_id => $taxon_id, assignment_score => $assignment_score, assignment_tool => $assignment_tool});
 			content_type 'application/json';
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
