@@ -14,6 +14,9 @@ plugins:
     driver: 'Pg'
     host: '127.0.0.1'
     port: 5432
-    username: 'dmolik'
+    username: ''
     database: 'met_test'
     password: ''
+    dbi_params:
+        RaiseError: 1
+        AutoCommit: 1
