@@ -38,85 +38,106 @@ get '/' => sub { # {{{
 # }}}
 
 prefix '/met' => sub {
-    # TODO - all deletes need to be privledged access via admin management
-    prefix '/taxa' => sub {
-        get '/asv' => sub {
-            my $sth  == ("SELECT * FROM asv,taxon_assignment,taxa WHERE asv.sequence = ? AND asv.asv_id = taxon_assignment.asv_id AND taxon_assignment.taxon_id = taxa.taxon_id;") or error "failed to prepare ".database->errstr;
-            my $asv = param "asv";
-            $sth->execute($asv) or error "failed to execute stmt ".database->errstr;
-            my @row;
-            my $data = ();
-            my $i = 0;
-            while (@row = $sth->fetchrow_array()) {
-                for (@row) {
-                    push @{$data->[$i]}, $_;
-                }
-                $i++;
-            }
-            content_type 'application/json';
-            return encode_json($data);
-        };
-        get '/name' => sub {
-            my @arr;
-            for my $qy (qw/ordo familia genus species/) {
-                print STDERR params->{$qy}."\n";
-                next;
-                push ( @arr, ($qy, params->{$qy})) if params->{$qy};
-            }
-            my $str = "SELECT * FROM taxa WHERE ";
-            for my $lvl (@arr) {
-                $str .= " $lvl->[0] = '?'";
-            }
-            my $sth = database()->prepare($str) or error "failed to prepare ".database->errstr;
-            switch(scalar @arr) {
-                case 4 { $sth->execute($arr[0][1], $arr[1][1], $arr[2][1], $arr[3][1]) or error "failed to execute stmt ".database->errstr; }
-                case 3 { $sth->execute($arr[0][1], $arr[1][1], $arr[2][1]) or error "failed to execute stmt ".database->errstr; }
-                case 2 { $sth->execute($arr[0][1], $arr[1][1]) or error "failed to execute stmt ".database->errstr; }
-                case 1 { $sth->execute($arr[0][1]) or error "failed to execute stmt ".database->errstr; }
-            }
-            my @row;
-            my $data = ();
-            my $i = 0;
-            while (@row = $sth->fetchrow_array()) {
-                for (@row) {
-                    push @{$data->[$i]}, $_;
-                }
-                $i++;
-            }
-            content_type 'application/json';
-            return encode_json($data);
-        };
-        post '/add' => sub {
-            my $order   = param "ordo";
-            my $family  = param "familia";
-            my $genus   = param "genus";
-            my $species = param "species";
-            my $sth = database()->quick_insert('taxa', { ordo => $order, familia => $family, genus => $genus, species => $species});
-            content_type 'application/json';
-            return encode_json($sth); #TODO - CHECK SYNTAX
-        };
-        post '/seq_assign' => sub {
-            my $taxon_id = param "taxon_id";
-            my $sequence = param "sequence";
-            my $source = param "source";
-            my $external_identifier = param "external_identifier";
-            my $sth = database()->quick_insert('taxa_seq_id',{taxon_id => $taxon_id, sequence => $sequence, source => $source, external_identifier => $external_identifier});
-            content_type 'application/json';
-            return encode_json($sth); #TODO - CHECK SYNTAX
-        };
-        post '/delete' => sub {
-            my $taxon_id = param "taxon_id";
-            my $sth = database()->quick_delete('taxa',{taxon_id => $taxon_id });
-            content_type 'application/json';
-            return encode_json($sth); #TODO - CHECK SYNTAX
-        };
-        post '/seq_delete' => sub {
+	# TODO - all deletes need to be privledged access via admin management
+	prefix '/taxa' => sub {
+		get '/asv' => sub {
+			my $sth  == ("SELECT * FROM asv,taxon_assignment,taxa WHERE asv.sequence = ? AND asv.asv_id = taxon_assignment.asv_id AND taxon_assignment.taxon_id = taxa.taxon_id;") or error "failed to prepare ".database->errstr;
+			my $asv = param "asv";
+			$sth->execute($asv) or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
+		};
+		get '/name' => sub {
+			my @arr;
+			for my $qy (qw/ordo familia genus species/) {
+				print STDERR params->{$qy}."\n";
+				next;
+				push ( @arr, ($qy, params->{$qy})) if params->{$qy};
+			}
+			my $str = "SELECT * FROM taxa WHERE ";
+			for my $lvl (@arr) {
+				$str .= " $lvl->[0] = '?'";
+			}
+			my $sth = database()->prepare($str) or error "failed to prepare ".database->errstr;
+			switch(scalar @arr) {
+				case 4 { $sth->execute($arr[0][1], $arr[1][1], $arr[2][1], $arr[3][1]) or error "failed to execute stmt ".database->errstr; }
+				case 3 { $sth->execute($arr[0][1], $arr[1][1], $arr[2][1]) or error "failed to execute stmt ".database->errstr; }
+				case 2 { $sth->execute($arr[0][1], $arr[1][1]) or error "failed to execute stmt ".database->errstr; }
+				case 1 { $sth->execute($arr[0][1]) or error "failed to execute stmt ".database->errstr; }
+			}
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
+		};
+		get '/id' => sub {
+			my $ordo = param "ordo";
+			my $familia = param "familia";
+			my $genus = param "genus";
+			my $species = param "species";
+			my $str = "SELECT taxon_id FROM taxa WHERE ordo = ? AND familia = ? AND genus = ? AND species = ?";
+			my $sth = database()->prepare($str) or error "failed to prepare ".database->errstr;
+            $sth->execute($ordo, $familia, $genus, $species) or error "failed to execute stmt ".database->errstr;
+
+			my @row;
+      my $data = ();
+      my $i = 0;
+        while (@row = $sth->fetchrow_array()) {
+          for (@row) {
+            push @{$data->[$i]}, $_;
+          }
+            $i++;
+          }
+      content_type 'application/json';
+      return encode_json($data);
+		};
+		post '/add' => sub {
+			my $order   = param "ordo";
+			my $family  = param "familia";
+			my $genus   = param "genus";
+			my $species = param "species";
+			my $sth = database()->quick_insert('taxa', { ordo => $order, familia => $family, genus => $genus, species => $species});
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
+		};
+		post '/seq_assign' => sub {
+			my $taxon_id = param "taxon_id";
+			my $sequence = param "sequence";
+			my $source = param "source";
+			my $external_identifier = param "external_identifier";
+			my $sth = database()->quick_insert('taxa_seq_id',{taxon_id => $taxon_id, sequence => $sequence, source => $source, external_identifier => $external_identifier});
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
+		};
+		post '/delete' => sub {
+			my $taxon_id = param "taxon_id";
+			my $sth = database()->quick_delete('taxa',{taxon_id => $taxon_id });
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
+		};
+		post '/seq_delete' => sub {
             my $seq_id = param "seq_id";
             my $sth = database()->quick_delete('taxa_seq_id',{seq_id => $seq_id });
             content_type 'application/json';
             return encode_json($sth); #TODO - CHECK SYNTAX
         };
-    };
+	};
 
     prefix '/dataset' => sub {
         get '/asv' => sub{ #TODO This is function dataset_asv
@@ -232,7 +253,7 @@ prefix '/met' => sub {
         };
     };
 
-    prefix '/description' => sub{
+	prefix '/description' => sub{
         get '/select' => sub{
             my $description_id = param "description_id";
             my $sth = database()->quick_select('descriptions', {description_id => $description_id});
