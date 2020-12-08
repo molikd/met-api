@@ -139,91 +139,147 @@ prefix '/met' => sub {
         };
 	};
 
-    prefix '/dataset' => sub {
-        get '/asv' => sub{ #TODO This is function dataset_asv
-            my $asv_id = param "asv_id";
-            my $str = "SELECT dataset_asv('$asv_id');";
-            my $sth  = database()->prepare($str) or error "failed to prepare ".database->errstr;
-            $sth->execute() or error "failed to execute stmt ".database->errstr;
-            my @row;
-            my $data = ();
-            my $i = 0;
-            while (@row = $sth->fetchrow_array()) {
-                for (@row) {
-                    push @{$data->[$i]}, $_;
-                }
-                $i++;
-            }
-            content_type 'application/json';
-            return encode_json($data);
-        };
-        get '/name' => sub{ #TODO this is dataset_asv_name
-            my $external_identifier = param "external_identifier";
-            my $str = "SELECT dataset_asv_name('$external_identifier');";
-            my $sth  = database()->prepare($str) or error "failed to prepare ".database->errstr;
-            $sth->execute() or error "failed to execute stmt ".database->errstr;
-            my @row;
-            my $data = ();
-            my $i = 0;
-            while (@row = $sth->fetchrow_array()) {
-                for (@row) {
-                    push @{$data->[$i]}, $_;
-                }
-                $i++;
-            }
-            content_type 'application/json';
-            return encode_json($data);
-        };
-        get '/dataset_table' => sub{
-            my $dataset_id = param "dataset_id";
-            my $str = "SELECT dataset_asv('$dataset_id');";
-            my $sth  = database()->prepare($str) or error "failed to prepare ".database->errstr;
-            $sth->execute() or error "failed to execute stmt ".database->errstr;
-            my @row;
-            my $data = ();
-            my $i = 0;
-            while (@row = $sth->fetchrow_array()) {
-                for (@row) {
-                    push @{$data->[$i]}, $_;
-                }
-                $i++;
-            }
-            content_type 'application/json';
-            return encode_json($data);
-        };
-        get '/dataset_taxa_table' => sub{
-            my $dataset_id = param "dataset_id";
-            my $str = "SELECT dataset_asv_name('$dataset_id');";
-            my $sth  = database()->prepare($str) or error "failed to prepare ".database->errstr;
-            $sth->execute() or error "failed to execute stmt ".database->errstr;
-            my @row;
-            my $data = ();
-            my $i = 0;
-            while (@row = $sth->fetchrow_array()) {
-                for (@row) {
-                    push @{$data->[$i]}, $_;
-                }
-                $i++;
-            }
-            content_type 'application/json';
-            return encode_json($data);
-        };
-        post '/add' => sub{
-            my $external_identifier = param "external_identifier";
-            my $external_name = param "external_name";
-            my $external_url = param "external_url";
-            my $sth = database()->quick_insert('datasets',{external_identifier => $external_identifier, external_name => $external_name, external_url => $external_url});
-            content_type 'application/json';
-            return encode_json($sth); #TODO - CHECK SYNTAX
-        };
-        post '/delete' => sub{
-            my $dataset_id = param "dataset_id";
-            my $sth = database()->quick_delete('datasets',{dataset_id => $dataset_id});
-            content_type 'application/json';
-            return encode_json($sth); #TODO - CHECK SYNTAX
-        };
-    };
+	prefix '/dataset' => sub {
+		get '/asv' => sub{ #TODO This is function dataset_asv
+			my $asv_id = param "asv_id";
+			my $str = "SELECT dataset_asv('$asv_id');";
+			my $sth  = database()->prepare($str) or error "failed to prepare ".database->errstr;
+			$sth->execute() or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
+		};
+		get '/name' => sub{ #TODO this is dataset_asv_name
+			my $external_identifier = param "external_identifier";
+			my $str = "SELECT dataset_asv_name('$external_identifier');";
+			my $sth  = database()->prepare($str) or error "failed to prepare ".database->errstr;
+			$sth->execute() or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
+		};
+		get '/dataset_table' => sub{
+			my $dataset_id = param "dataset_id";
+			my $str = "SELECT dataset_asv('$dataset_id');";
+			my $sth  = database()->prepare($str) or error "failed to prepare ".database->errstr;
+			$sth->execute() or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
+		};
+		get '/dataset_taxa_table' => sub{
+			my $dataset_id = param "dataset_id";
+			my $str = "SELECT dataset_asv_name('$dataset_id');";
+			my $sth  = database()->prepare($str) or error "failed to prepare ".database->errstr;
+			$sth->execute() or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
+		};
+		post '/add' => sub{
+			my $external_identifier = param "external_identifier";
+			my $external_name = param "external_name";
+			my $external_url = param "external_url";
+			my $sth = database()->quick_insert('datasets',{external_identifier => $external_identifier, external_name => $external_name, external_url => $external_url});
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
+		};
 
+		get '/dataset_id' => sub {
+      my $external_identifier = param "external_identifier";
+      my $str = "SELECT dataset_id FROM datasets WHERE external_identifier = ?";
+      my $sth = database()->prepare($str) or error "failed to prepare ".database->errstr;
+      $sth->execute($external_identifier) or error "failed to execute stmt ".database->errstr;
+            
+      my @row;
+      my $data = ();
+      my $i = 0;
+      while (@row = $sth->fetchrow_array()) {
+        for (@row) {
+          push @{$data->[$i]}, $_;
+        }
+        $i++;
+      }
+      content_type 'application/json';
+      return encode_json($data);
+    };
+    
+    post '/addmetadata' => sub{
+			my $dataset_id = param "dataset_id";
+      my $dataset_external_identifier = param "dataset_external_identifier";
+			my $project_id = param "project_id";
+			my $collection_identifier = param "collection_identifier";
+			my $experiment_identifier = param "experiment_identifier";
+			my $sample_name = param "sample_name";
+			my $study_identifier = param "study_identifier";
+			my $assay_type = param "assay_type";
+			my $AvgSpotLen = param "AvgSpotLen";
+			my $publisher = param "publisher";
+			my $collection_date = param "collection_date";
+			my $sample_depth = param "sample_depth";
+			my $sample_elev = param "sample_elev";
+			my $sample_sal = param "sample_sal";
+			my $env_biome = param "env_biome";
+			my $env_feature = param "env_feature";
+			my $env_material = param "env_material";
+			my $geo_loc_name_country = param "geo_loc_name_country";
+			my $geo_loc_name_country_continent = param "geo_loc_name_country_continent";
+			my $geo_loc_name = param "geo_loc_name";
+			my $loc_type = param "loc_type";
+			my $sequencing_instrument = param "sequencing_instrument";
+			my $isolation_source = param "isolation_source";
+			my $lat_lon = param "lat_lon";
+			my $library_name = param "library_name";
+			my $library_layout = param "library_layout";
+			my $library_selection = param "library_selection";
+			my $library_source = param "library_source";
+			my $MBases = param "MBases";
+			my $MBytes = param "MBytes";
+			my $sequencing_platform = param "sequencing_platform";
+			my $release_date = param "release_date";
+			my $sth = database()->quick_insert('dataset_metadata',{dataset_id => $dataset_id, dataset_external_identifier => $dataset_external_identifier, project_id => $project_id, collection_identifier => $collection_identifier, experiment_identifier => $experiment_identifier, sample_name => $sample_name, study_identifier => $study_identifier, assay_type => $assay_type, avgspotlen => $AvgSpotLen, publisher => $publisher, collection_date => $collection_date, sample_depth => $sample_depth, sample_elev => $sample_elev, sample_sal => $sample_sal, env_biome => $env_biome, env_feature => $env_feature, env_material => $env_material, geo_loc_name_country => $geo_loc_name_country, geo_loc_name_country_continent => $geo_loc_name_country_continent, geo_loc_name => $geo_loc_name, loc_type => $loc_type, sequencing_instrument => $sequencing_instrument, isolation_source => $isolation_source, lat_lon => $lat_lon, library_name => $library_name, library_layout => $library_layout, library_selection => $library_selection, library_source => $library_source, mbases => $MBases, mbytes => $MBytes, sequencing_platform => $sequencing_platform, release_date => $release_date});
+      content_type 'application/json';
+      return encode_json($sth); #TODO - CHECK SYNTAX
+		};
+		post '/delete' => sub{
+			my $dataset_id = param "dataset_id";
+			my $sth = database()->quick_delete('datasets',{dataset_id => $dataset_id});
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
+		};
+	};
     # TODO this will return taxa functional profile data, waiting for Stephanies updates.
     # prefix '/functional_profile' => sub {
     # };
@@ -250,6 +306,24 @@ prefix '/met' => sub {
             my $sth = database()->quick_delete('projects', {association_id => $association_id});
             content_type 'application/json';
             return encode_json($sth);
+        };
+		get '/project_id' => sub {
+            my $external_identifier = param "external_identifier";
+            my $str = "SELECT association_id FROM projects WHERE external_identifier = ?";
+            my $sth = database()->prepare($str) or error "failed to prepare ".database->errstr;
+            $sth->execute($external_identifier) or error "failed to execute stmt ".database->errstr;
+
+            my @row;
+            my $data = ();
+            my $i = 0;
+            while (@row = $sth->fetchrow_array()) {
+                for (@row) {
+                    push @{$data->[$i]}, $_;
+                }
+                $i++;
+            }
+            content_type 'application/json';
+            return encode_json($data);
         };
     };
 
