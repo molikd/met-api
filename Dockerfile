@@ -1,4 +1,4 @@
-FROM registry.k8s.brgl.org/brgl/perl:0.0.1
+FROM scottw/alpine-perl:5.26-native
 
 COPY . /home/met/met-api
 
