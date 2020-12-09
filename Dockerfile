@@ -4,7 +4,7 @@ RUN apk update && apk upgrade && apk add curl perl perl-dev make gcc build-base 
 
 RUN curl -LO https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm \
     && chmod +x cpanm \
-    && ./cpanm App::cpanminus \
+    && ./cpanm  --notest App::cpanminus \
     && rm -fr ./cpanm /root/.cpanm
 
 ENV PERL_CPANM_OPT --verbose --mirror https://cpan.metacpan.org --mirror-only
