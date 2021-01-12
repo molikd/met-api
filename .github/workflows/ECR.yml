@@ -23,6 +23,6 @@ jobs:
         secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         account_id: ${{ secrets.AWS_ACCOUNT_ID }}
         repo: docker/repo
-        region: us-east-2
+        region: us-east-1
         tags: latest,${{ github.sha }}
         create_repo: true
