@@ -6,9 +6,9 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master ]
+    branches: [ live ]
   pull_request:
-    branches: [ master ]
+    branches: [ live ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -23,6 +23,7 @@ jobs:
         secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         account_id: ${{ secrets.AWS_ACCOUNT_ID }}
         repo: docker/repo
+        dockerfile: Dockerfile
         region: us-east-1
         tags: latest,${{ github.sha }}
         create_repo: true
