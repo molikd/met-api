@@ -1,9 +1,5 @@
 # Met-API
 
-
-[![Build Status](https://drone.k8s.brgl.org/api/badges/met/met-api/status.svg)](https://drone.k8s.brgl.org/met/met-api)
-
-
 The README is used to introduce the module and provide instructions on
 how to install the module, any machine dependencies it may have (for
 example C compilers and installed libraries) and any other information
@@ -15,6 +11,10 @@ can use it to get an idea of the module's uses. It is usually a good idea
 to provide version information here so that people can decide whether
 fixes for the module are worth downloading.
 
+## Branching
+
+'live' is what is out on the servers 
+'master' is main devlopment branch 
 
 ## INSTALLATION
 
