@@ -18,7 +18,7 @@ RUN apk update && apk add --no-cache --virtual .build-dependencies make perl-tes
 
 RUN cd /home/met/met-api \
 	&& perl Makefile.PL && make \
-	&& RELEASE_TESTING=1 make test \
+	# TODO: Add back when testing implemented. && RELEASE_TESTING=1 make test \
 	&& make install \
 	&& cd / \
 	&& apk del .build-dependencies \
