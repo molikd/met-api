@@ -96,16 +96,16 @@ prefix '/met' => sub {
             $sth->execute($ordo, $familia, $genus, $species) or error "failed to execute stmt ".database->errstr;
 
 			my @row;
-            my $data = ();
-            my $i = 0;
-            while (@row = $sth->fetchrow_array()) {
-                for (@row) {
-                    push @{$data->[$i]}, $_;
-                }
-                $i++;
-            }
-            content_type 'application/json';
-            return encode_json($data);
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+			}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
 		};
 		post '/add' => sub {
 			my $order   = param "ordo";
@@ -132,11 +132,11 @@ prefix '/met' => sub {
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 		post '/seq_delete' => sub {
-            my $seq_id = param "seq_id";
-            my $sth = database()->quick_delete('taxa_seq_id',{seq_id => $seq_id });
-            content_type 'application/json';
-            return encode_json($sth); #TODO - CHECK SYNTAX
-        };
+			my $seq_id = param "seq_id";
+			my $sth = database()->quick_delete('taxa_seq_id',{seq_id => $seq_id });
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
+		};
 	};
 
 	prefix '/dataset' => sub {
@@ -218,27 +218,27 @@ prefix '/met' => sub {
 		};
 
 		get '/dataset_id' => sub {
-            my $external_identifier = param "external_identifier";
-            my $str = "SELECT dataset_id FROM datasets WHERE external_identifier = ?";
-            my $sth = database()->prepare($str) or error "failed to prepare ".database->errstr;
-            $sth->execute($external_identifier) or error "failed to execute stmt ".database->errstr;
+			my $external_identifier = param "external_identifier";
+			my $str = "SELECT dataset_id FROM datasets WHERE external_identifier = ?";
+			my $sth = database()->prepare($str) or error "failed to prepare ".database->errstr;
+			$sth->execute($external_identifier) or error "failed to execute stmt ".database->errstr;
 
-            my @row;
-            my $data = ();
-            my $i = 0;
-            while (@row = $sth->fetchrow_array()) {
-                for (@row) {
-                    push @{$data->[$i]}, $_;
-                }
-                $i++;
-            }
-            content_type 'application/json';
-            return encode_json($data);
-        };
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+				content_type 'application/json';
+				return encode_json($data);
+		};
 
 		post '/addmetadata' => sub{
 			my $dataset_id = param "dataset_id";
-            my $dataset_external_identifier = param "dataset_external_identifier";
+			my $dataset_external_identifier = param "dataset_external_identifier";
 			my $project_id = param "project_id";
 			my $collection_identifier = param "collection_identifier";
 			my $experiment_identifier = param "experiment_identifier";
@@ -287,35 +287,35 @@ prefix '/met' => sub {
 	#TODO dataset metadata
 	
 	prefix '/projects' => sub{
-        get '/select' => sub{
-            my $association_id = param "association_id";
-            my $sth = database()->quick_select('projects', {association_id => $association_id});
-            content type 'application/json';
-            return encode_json($sth);
-        };
+		get '/select' => sub{
+			my $association_id = param "association_id";
+			my $sth = database()->quick_select('projects', {association_id => $association_id});
+			content type 'application/json';
+			return encode_json($sth);
+		};
 		post '/add' => sub{
-            my $project_name = param "project_name";
-            my $external_identifier = param "external_identifier";
-            my $external_name = param "external_name";
-            my $sth = database()->quick_insert('projects', {project_name => $project_name, external_identifier => $external_identifier, external_name => $external_name});
-            content_type 'application/json';
-            return encode_json($sth);
-        };
-        post '/add_total' => sub{
-            my $project_name = param "project_name";
-            my $external_identifier = param "external_identifier";
-            my $external_name = param "external_name";
-            my $dataset_ids = param "dataset_ids";
-            my $sth = database()->quick_insert('projects', {project_name => $project_name, external_identifier => $external_identifier, external_name => $external_name, dataset_ids => $dataset_ids});
-            content_type 'application/json';
-            return encode_json($sth);
-        };
-        post '/delete' => sub{
-            my $association_id = param "association_id";
-            my $sth = database()->quick_delete('projects', {association_id => $association_id});
-            content_type 'application/json';
-            return encode_json($sth);
-        };
+			my $project_name = param "project_name";
+			my $external_identifier = param "external_identifier";
+			my $external_name = param "external_name";
+			my $sth = database()->quick_insert('projects', {project_name => $project_name, external_identifier => $external_identifier, external_name => $external_name});
+			content_type 'application/json';
+			return encode_json($sth);
+		};
+		post '/add_total' => sub{
+			my $project_name = param "project_name";
+			my $external_identifier = param "external_identifier";
+			my $external_name = param "external_name";
+			my $dataset_ids = param "dataset_ids";
+			my $sth = database()->quick_insert('projects', {project_name => $project_name, external_identifier => $external_identifier, external_name => $external_name, dataset_ids => $dataset_ids});
+			content_type 'application/json';
+			return encode_json($sth);
+		};
+		post '/delete' => sub{
+			my $association_id = param "association_id";
+			my $sth = database()->quick_delete('projects', {association_id => $association_id});
+			content_type 'application/json';
+			return encode_json($sth);
+		};
 		post '/update' => sub{
 			my $dataset_id = param "dataset_id";
 			my $project_name = param "project_name";
@@ -326,47 +326,46 @@ prefix '/met' => sub {
 			return encode_json($sth);
 		};
 		get '/project_id' => sub {
-            my $external_identifier = param "external_identifier";
-            my $str = "SELECT association_id FROM projects WHERE external_identifier = ?";
-            my $sth = database()->prepare($str) or error "failed to prepare ".database->errstr;
-            $sth->execute($external_identifier) or error "failed to execute stmt ".database->errstr;
-
-            my @row;
-            my $data = ();
-            my $i = 0;
-            while (@row = $sth->fetchrow_array()) {
-                for (@row) {
-                    push @{$data->[$i]}, $_;
-                }
-                $i++;
-            }
-            content_type 'application/json';
-            return encode_json($data);
-        };
-    };
+			my $external_identifier = param "external_identifier";
+			my $str = "SELECT association_id FROM projects WHERE external_identifier = ?";
+			my $sth = database()->prepare($str) or error "failed to prepare ".database->errstr;
+			$sth->execute($external_identifier) or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
+		};
+	};
 
 	prefix '/description' => sub{
-        get '/select' => sub{
-            my $description_id = param "description_id";
-            my $sth = database()->quick_select('descriptions', {description_id => $description_id});
-            content_type 'application/json';
-            return encode_json($sth);
-        };
-        post '/add' => sub{
-            my $taxon_id = param "taxon_id";
-            my $description = param "description";
-            my $name = param "name";
-            my $sth = database()->quick_insert('descriptions', {taxon_id => $taxon_id, description => $description, name => $name});
-            content_type 'application/json';
-            return encode_json($sth);
-        };
-        post '/delete' => sub{
-            my $description_id = param "description_id";
-            my $sth = database()->quick_delete('descriptions', {description_id => $description_id});
-            content_type 'application/json';
-            return encode_json($sth);
-        };
-    };
+		get '/select' => sub{
+			my $description_id = param "description_id";
+			my $sth = database()->quick_select('descriptions', {description_id => $description_id});
+			content_type 'application/json';
+			return encode_json($sth);
+		};
+		post '/add' => sub{
+			my $taxon_id = param "taxon_id";
+			my $description = param "description";
+			my $name = param "name";
+			my $sth = database()->quick_insert('descriptions', {taxon_id => $taxon_id, description => $description, name => $name});
+			content_type 'application/json';
+			return encode_json($sth);
+		};
+		post '/delete' => sub{
+			my $description_id = param "description_id";
+			my $sth = database()->quick_delete('descriptions', {description_id => $description_id});
+			content_type 'application/json';
+			return encode_json($sth);
+		};
+	};
 
 	prefix '/asv' => sub{
 		get '/select' => sub{
@@ -401,11 +400,11 @@ prefix '/met' => sub {
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 		post '/delete_dataset' => sub{
-            my $asv_assignment_id = param "asv_assignment_id";
-            my $sth = database()->quick_delete('asv_assignment',{asv_assignment_id => $asv_assignment_id});
-            content_type 'application/json';
-            return encode_json($sth); #TODO - CHECK SYNTAX
-        };
+			my $asv_assignment_id = param "asv_assignment_id";
+			my $sth = database()->quick_delete('asv_assignment',{asv_assignment_id => $asv_assignment_id});
+			content_type 'application/json';
+			return encode_json($sth); #TODO - CHECK SYNTAX
+		};
 		post '/assign_taxa' => sub{
 			my $asv_id = param "asv_id";
 			my $taxon_id = param "taxon_id";
