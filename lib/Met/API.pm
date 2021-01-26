@@ -222,7 +222,6 @@ prefix '/met' => sub {
 			my $str = "SELECT dataset_id FROM datasets WHERE external_identifier = ?";
 			my $sth = database()->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute($external_identifier) or error "failed to execute stmt ".database->errstr;
-
 			my @row;
 			my $data = ();
 			my $i = 0;
@@ -429,24 +428,22 @@ prefix '/met' => sub {
 			return encode_json($sth); #TODO - CHECK SYNTAX
 		};
 		get '/asv_id' => sub {
-            my $sequence = param "sequence";
-            my $str = "SELECT asv_id FROM asv WHERE sequence = ?";
-            my $sth = database()->prepare($str) or error "failed to prepare ".database->errstr;
-            $sth->execute($sequence) or error "failed to execute stmt ".database->errstr;
-
-            my @row;
-            my $data = ();
-            my $i = 0;
-            while (@row = $sth->fetchrow_array()) {
-                for (@row) {
-                    push @{$data->[$i]}, $_;
-                }
-                $i++;
-            }
-            content_type 'application/json';
-            return encode_json($data);
-        };
-
+			my $sequence = param "sequence";
+			my $str = "SELECT asv_id_sequence_from_sequence('$asv');";
+			my $sth = database()->prepare($str) or error "failed to prepare ".database->errstr;
+			$sth->execute($sequence) or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+			$i++;
+			}
+			content_type 'application/json';
+			return encode_json($data);
+		};
 	};
 
 	prefix '/search' => sub {
