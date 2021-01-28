@@ -23,4 +23,5 @@ RUN cd /home/met/met-api \
 	&& cd / \
 	&& apk del .build-dependencies \
 	&& rm -rf /var/cache/apk/* \
-	&& cd /home/met
+	&& cd /home/met \
+	&& mkdir -p logs/var/log
