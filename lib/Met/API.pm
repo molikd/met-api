@@ -429,7 +429,7 @@ prefix '/met' => sub {
 		};
 		get '/asv_id' => sub {
 			my $sequence = param "sequence";
-			my $str = "SELECT asv_id_sequence_from_sequence('$asv');";
+			my $str = "SELECT asv_id_sequence_from_sequence('$sequence');";
 			my $sth = database()->prepare($str) or error "failed to prepare ".database->errstr;
 			$sth->execute($sequence) or error "failed to execute stmt ".database->errstr;
 			my @row;
