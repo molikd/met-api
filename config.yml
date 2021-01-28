@@ -2,9 +2,9 @@ appname: met
 
 log_level: 'info'
 log_facility: 'daemon'
-workers: 8
-keepalive: 300
-port: 5000
+workers: 4
+keepalive: 3000
+port: 80
 gid: 'met'
 uid: 'met'
 pidfile: '/run/met-api.pid'
@@ -12,11 +12,11 @@ log_file: '/var/log/met-api.log'
 plugins:
   Database:
     driver: 'Pg'
-    host: '127.0.0.1'
+    host: 'met-db.cluster-cpotngkfolvw.us-east-1.rds.amazonaws.com'
     port: 5432
-    username: ''
-    database: 'met_test'
-    password: ''
+    username: 'postgres_met_db'
+    database: 'met_db'
+    password: 'WED23mA3WVGrCzf'
     dbi_params:
         RaiseError: 1
         AutoCommit: 1
