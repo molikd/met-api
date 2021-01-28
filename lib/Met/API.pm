@@ -19,8 +19,6 @@ our $VERSION = '0.02';
 
 my $name = __PACKAGE__;
 
-set port => 80;
-
 get '/' => sub { # {{{
 	info '/ hit';
 	my $html = qq|
