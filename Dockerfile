@@ -13,7 +13,7 @@ RUN curl -LO https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm \
 ENV PERL_CPANM_OPT --verbose --mirror https://cpan.metacpan.org --mirror-only
 
 RUN cpanm --force YAML Carton Starman Plack Plack::Builder Dancer && cpanm --force Dancer::Plugin::Database && rm -rf ~/.cpanm
-RUN cpanm install Switch YAML::XS JSON::XS Plack::Handler::Gazelle DBD::Pg && rm -rf ~/.cpanm
+RUN cpanm install Switch YAML::XS JSON::XS Plack::Handler::Gazelle && rm -rf ~/.cpanm
 
 RUN apk update && apk add --no-cache --virtual .build-dependencies make perl-test-pod-coverage perl-test-pod
 
