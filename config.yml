@@ -14,9 +14,9 @@ plugins:
     driver: 'Pg'
     host: 'met-db.cluster-cpotngkfolvw.us-east-1.rds.amazonaws.com'
     port: 5432
-    username: 'postgres_met_db'
+    username: ''
     database: 'met_db'
-    password: 'WED23mA3WVGrCzf'
+    password: ''
     dbi_params:
         RaiseError: 1
         AutoCommit: 1
