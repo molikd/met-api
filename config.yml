@@ -20,3 +20,9 @@ plugins:
     dbi_params:
         RaiseError: 1
         AutoCommit: 1
+  "Auth::Github":
+    client_id: "abcde"
+    client_secret: "abcde"
+    scope: ""
+    github_auth_failed: "/fail"
+    github_auth_success: "/"

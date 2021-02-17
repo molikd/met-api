@@ -13,14 +13,31 @@ use JSON::XS qw/encode_json decode_json/;
 use Plack::Handler::Gazelle;
 
 use Dancer::Plugin::Database;
+use Dancer::Plugin::Auth::Github;
 #use Dancer::Logger::Met;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 my $name = __PACKAGE__;
 
-get '/' => sub { # {{{
+set 'session'      => 'Simple';
+ 
+auth_github_init();
+ 
+hook before => sub {
+    #we don't want to be in a redirect loop
+    return if request->path =~ m{/auth/github/callback};
+    if (not session('github_user')) {
+        redirect auth_github_authenticate_url;
+    }
+};
+
+
+
+get '/' => sub { # {
+	{{
 	info '/ hit';
+	my $user = .session('github_user')->{'login'};
 	my $html = qq|
 		<!DOCTYPE html>
 		<html lang="en_US">
@@ -29,7 +46,7 @@ get '/' => sub { # {{{
 			<title>$name</title>
 		</head>
 		<body>
-			<center>$name</center>
+			<center>Hello, $user</center>
 		</body>
 		</html>
 	|;
