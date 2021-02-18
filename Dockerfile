@@ -3,7 +3,7 @@ FROM alpine
 WORKDIR /home/met/met-api
 COPY . /home/met/met-api
 
-RUN apk update && apk upgrade && apk add curl perl perl-dev make gcc build-base wget gnupg
+RUN apk update && apk upgrade && apk add curl perl perl-dev make gcc build-base wget postgresql postgresql-dev gnupg
 
 RUN curl -LO https://raw.githubusercontent.com/miyagawa/cpanminus/master/cpanm \
     && chmod +x cpanm \
