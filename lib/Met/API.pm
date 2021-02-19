@@ -252,6 +252,24 @@ prefix '/met' => sub {
 				return encode_json($data);
 		};
 
+		get '/datasets_asv_alphas' => sub {
+			my $str = "SELECT * FROM dataset_alpha";
+			my $sth = database()->prepare($str) or error "failed to prepare ".database->errstr;
+			$sth->execute($external_identifier) or error "failed to execute stmt ".database->errstr;
+			my @row;
+			my $data = ();
+			my $i = 0;
+			while (@row = $sth->fetchrow_array()) {
+				for (@row) {
+					push @{$data->[$i]}, $_;
+				}
+				$i++;
+			}
+				content_type 'application/json';
+				return encode_json($data);
+		};
+
+
 		post '/addmetadata' => sub{
 			my $dataset_id = param "dataset_id";
 			my $dataset_external_identifier = param "dataset_external_identifier";
@@ -297,11 +315,6 @@ prefix '/met' => sub {
 		};
 	};
 
-	# TODO this will return taxa functional profile data, waiting for Stephanies updates.
-	# prefix '/functional_profile' => sub {
-	# };
-	#TODO dataset metadata
-	
 	prefix '/projects' => sub{
 		get '/select' => sub{
 			my $association_id = param "association_id";
